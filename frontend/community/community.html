@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community - HeartNest</title>
+    <link rel="stylesheet" href="community.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">💖</span>
+                <span class="logo-text">HeartNest</span>
+            </div>
+            <nav class="nav">
+                <a href="../Dashboard/dashboard.html" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="community.html" class="nav-item active">
+                    <span class="nav-icon">👥</span>
+                    <span>Community</span>
+                </a>
+                <a href="../profile/profile.html" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span>Profile</span>
+                </a>
+                <button class="btn-notification">
+                    <span>🔔</span>
+                    <span class="notification-badge">3</span>
+                </button>
+                <button class="btn-logout" onclick="handleLogout()">
+                    <span>🚪</span>
+                    <span>Logout</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="community-header">
+                <h1>Community Feed</h1>
+                <p>Discover posts from everyone in the HeartNest community</p>
+            </div>
+
+            <div class="feed-container" id="communityFeed">
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <span class="logo-icon">💖</span>
+                <span>HeartNest</span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Help Center</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+        <p class="copyright">© 2025 HeartNest. All rights reserved. Building meaningful connections.</p>
+    </footer>
+
+    <script src="community.js"></script>
+</body>
+</html>

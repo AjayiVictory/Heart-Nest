@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join HeartNest - Sign Up</title>
+    <link rel="stylesheet" href="signin.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">💖</span>
+                <span class="logo-text">HeartNest</span>
+            </div>
+            <nav class="nav">
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="../index.html" class="btn-nav">Sign In</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="form-section">
+                <div class="form-card">
+                    <h1>Join HeartNest</h1>
+                    <p class="subtitle">Create your account and start your journey</p>
+
+                    <form id="signupForm" class="signup-form">
+                        <div class="form-group">
+                            <label for="fullname">Full Name</label>
+                            <input type="text" id="fullname" placeholder="Enter your full name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" placeholder="your.email@example.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <div class="password-input">
+                                <input type="password" id="password" placeholder="Create a password" required>
+                                <button type="button" class="toggle-password" onclick="togglePassword('password')">
+                                    <span class="eye-icon">👁️</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <div class="password-input">
+                                <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+                                <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">
+                                    <span class="eye-icon">👁️</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="terms" required>
+                            <label for="terms">I agree to the Terms and Conditions</label>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Create Account</button>
+
+                        <div class="divider">
+                            <span>Or continue with</span>
+                        </div>
+
+                        <div class="social-buttons">
+                            <button type="button" class="btn-social">
+                                <span class="social-icon">G</span>
+                                Continue with Google
+                            </button>
+                            <button type="button" class="btn-social">
+                                <span class="social-icon">f</span>
+                                Continue with Apple
+                            </button>
+                        </div>
+
+                        <p class="signin-link">
+                            Already have an account? <a href="../index.html">Sign In</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+            <div class="features-section">
+                <div class="feature-mini-card">
+                    <div class="feature-mini-icon">📱</div>
+                    <h3>Emotional Support</h3>
+                    <p>Get personalized emotional guidance and support whenever you need it</p>
+                </div>
+                <div class="feature-mini-card">
+                    <div class="feature-mini-icon">❤️</div>
+                    <h3>Mental Wellness</h3>
+                    <p>Track and improve your emotional well-being with our tools</p>
+                </div>
+                <div class="feature-mini-card">
+                    <div class="feature-mini-icon">👥</div>
+                    <h3>Safe Community</h3>
+                    <p>Connect with others in a supportive and secure environment</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <span class="logo-icon">💖</span>
+                <span>HeartNest</span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+        <p class="copyright">© 2025 HeartNest. All rights reserved. Made with ❤️ for meaningful connections</p>
+    </footer>
+
+    <script src="signin.js"></script>
+</body>
+</html>

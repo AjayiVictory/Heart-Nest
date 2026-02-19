@@ -1,0 +1,322 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #ffffff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.hero {
+    padding: 80px 20px 60px;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 40px;
+    line-height: 1.2;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.hero-subtitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+
+.hero-subtitle h2 {
+    font-size: 1.8rem;
+    font-weight: 400;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 12px 30px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.btn-primary {
+    background-color: #ffffff;
+    color: #667eea;
+}
+
+.btn-primary:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.tagline {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.features {
+    padding: 60px 20px;
+}
+
+.feature-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.feature-card p {
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+.about {
+    padding: 60px 20px;
+}
+
+.about-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 50px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.about-text h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.about-text p {
+    margin-bottom: 25px;
+    opacity: 0.9;
+    line-height: 1.8;
+}
+
+.about-features {
+    list-style: none;
+    margin-top: 20px;
+}
+
+.about-features li {
+    padding: 10px 0;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.about-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-placeholder {
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.cta {
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.cta h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.footer {
+    padding: 30px 20px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.footer p {
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .hero-subtitle h2 {
+        font-size: 1.5rem;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+    }
+
+    .feature-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .about-content {
+        grid-template-columns: 1fr;
+        padding: 30px;
+        gap: 30px;
+    }
+
+    .about-text h2 {
+        font-size: 2rem;
+    }
+
+    .cta h2 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        padding: 60px 20px 40px;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-subtitle h2 {
+        font-size: 1.2rem;
+    }
+
+    .btn {
+        padding: 10px 25px;
+        font-size: 0.9rem;
+    }
+
+    .tagline {
+        font-size: 1rem;
+    }
+
+    .feature-card {
+        padding: 25px;
+    }
+
+    .feature-card h3 {
+        font-size: 1.3rem;
+    }
+
+    .about-content {
+        padding: 20px;
+    }
+
+    .about-text h2 {
+        font-size: 1.8rem;
+    }
+
+    .cta {
+        padding: 60px 20px;
+    }
+
+    .cta h2 {
+        font-size: 1.8rem;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cta-buttons .btn {
+        width: 100%;
+        max-width: 250px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .hero-title {
+        font-size: 4rem;
+    }
+
+    .container {
+        max-width: 1400px;
+    }
+}

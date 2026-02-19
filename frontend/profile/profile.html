@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - HeartNest</title>
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">💖</span>
+                <span class="logo-text">HeartNest</span>
+            </div>
+            <nav class="nav">
+                <a href="../Dashboard/dashboard.html" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="../community/community.html" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span>Community</span>
+                </a>
+                <a href="profile.html" class="nav-item active">
+                    <span class="nav-icon">👤</span>
+                    <span>Profile</span>
+                </a>
+                <button class="btn-notification">
+                    <span>🔔</span>
+                    <span class="notification-badge">3</span>
+                </button>
+                <button class="btn-logout" onclick="handleLogout()">
+                    <span>🚪</span>
+                    <span>Logout</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="profile-section">
+                <div class="profile-card">
+                    <div class="profile-banner"></div>
+                    <div class="profile-info-section">
+                        <img src="https://via.placeholder.com/120" alt="Profile" class="profile-pic">
+                        <h1 id="profileName">User Name</h1>
+                        <p id="profileEmail">user@example.com</p>
+                        <button class="btn-edit" onclick="toggleEdit()">Edit Profile</button>
+                    </div>
+                </div>
+
+                <div class="profile-details">
+                    <div class="detail-card">
+                        <h3>About Me</h3>
+                        <textarea id="bioInput" readonly rows="4" placeholder="Tell us about yourself..."></textarea>
+                    </div>
+
+                    <div class="detail-card">
+                        <h3>Interests</h3>
+                        <div id="interestsList" class="interests-container"></div>
+                    </div>
+
+                    <div class="detail-card">
+                        <h3>Account Settings</h3>
+                        <div class="settings-list">
+                            <div class="setting-row">
+                                <span>Email Notifications</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="emailNotif" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <span>Profile Visibility</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="profileVis" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <span>Community Updates</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="matchAlerts" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <h3>Activity Stats</h3>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <span class="stat-number" id="postCount">0</span>
+                                <span class="stat-label">Posts</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-number" id="likeCount">0</span>
+                                <span class="stat-label">Likes Given</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-number" id="connectionCount">0</span>
+                                <span class="stat-label">Connections</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <span class="logo-icon">💖</span>
+                <span>HeartNest</span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Help</a>
+            </div>
+        </div>
+        <p class="copyright">© 2025 HeartNest. All rights reserved.</p>
+    </footer>
+
+    <script src="profile.js"></script>
+</body>
+</html>

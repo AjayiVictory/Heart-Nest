@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - HeartNest</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">💖</span>
+                <span class="logo-text">HeartNest</span>
+            </div>
+            <div class="search-container">
+                <input type="text" id="userSearch" class="search-input" placeholder="Search for users..." oninput="searchUsers()">
+                <span class="search-icon">🔍</span>
+                <div id="searchResults" class="search-results"></div>
+            </div>
+            <nav class="nav">
+                <a href="dashboard.html" class="nav-item active">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="../community/community.html" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span>Community</span>
+                </a>
+                <a href="../profile/profile.html" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span>Profile</span>
+                </a>
+                <button class="btn-notification" onclick="openSettings(event)">
+                    <span>⚙️</span>
+                </button>
+                <button class="btn-notification" onclick="openNotifications(event)">
+                    <span>🔔</span>
+                    <span class="notification-badge" id="notifBadge">0</span>
+                </button>
+                <button class="btn-logout" onclick="handleLogout()">
+                    <span>🚪</span>
+                    <span>Logout</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="left-column">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <img src="https://via.placeholder.com/80" alt="Profile" class="profile-avatar">
+                        <div class="profile-info">
+                            <h2 id="userName">Sarah Mitchell</h2>
+                            <p class="profile-bio">
+                                A believer intentional about emotional wellbeing and spiritual growth. 
+                                Here to share experiences and support others on their journey.
+                            </p>
+                            <div class="profile-stats">
+                                <div class="stat-item">
+                                    <span class="stat-value" id="dashPostCount">0</span>
+                                    <span class="stat-label">Posts</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="dashLikeCount">0</span>
+                                    <span class="stat-label">Likes Given</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="dashSavedCount">0</span>
+                                    <span class="stat-label">Saved</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="dashConnectionCount">0</span>
+                                    <span class="stat-label">Connections</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn-edit-profile" onclick="openEditProfile()">Edit Profile</button>
+                    </div>
+                </div>
+
+                <div class="feed-tabs">
+                    <button class="tab-btn active">
+                        <span class="tab-icon">📝</span>
+                        Posts
+                    </button>
+                    <button class="tab-btn">
+                        <span class="tab-icon">❤️</span>
+                        Liked
+                    </button>
+                    <button class="tab-btn">
+                        <span class="tab-icon">🔖</span>
+                        Saved
+                    </button>
+                </div>
+
+                <div class="post-create-box">
+                    <textarea id="postContent" placeholder="What's on your mind?" rows="3"></textarea>
+                    <button class="btn-post" onclick="publishPost()">Post</button>
+                </div>
+
+                <div class="posts-feed">
+                    <div class="post-card">
+                        <div class="post-header">
+                            <img src="https://via.placeholder.com/40" alt="User" class="post-avatar">
+                            <div class="post-user-info">
+                                <h4>Sarah Mitchell</h4>
+                                <span class="post-time">2 hours ago</span>
+                            </div>
+                        </div>
+                        <p class="post-content">
+                            I just joined this wonderful community! I'm excited to meet new people. I'm looking for 
+                            someone who's up for spontaneous road trips and deep late-night conversations about life 
+                            and dreams. Let's connect!
+                        </p>
+                        <div class="post-actions">
+                            <button class="post-action-btn">
+                                <span>👍</span>
+                                <span>45</span>
+                            </button>
+                            <button class="post-action-btn">
+                                <span>💬</span>
+                                <span>7</span>
+                            </button>
+                            <button class="post-action-btn">
+                                <span>🔗</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="post-card">
+                        <div class="post-header">
+                            <img src="https://via.placeholder.com/40" alt="User" class="post-avatar">
+                            <div class="post-user-info">
+                                <h4>Sarah Mitchell</h4>
+                                <span class="post-time">5 hours ago</span>
+                            </div>
+                        </div>
+                        <p class="post-content">
+                            Coffee date at Brew Haven this morning was amazing! There's something magical about 
+                            sharing stories over a warm cup of coffee. If you're a fellow coffee enthusiast, we 
+                            should definitely chat! ☕✨
+                        </p>
+                        <div class="post-actions">
+                            <button class="post-action-btn">
+                                <span>👍</span>
+                                <span>89</span>
+                            </button>
+                            <button class="post-action-btn">
+                                <span>💬</span>
+                                <span>12</span>
+                            </button>
+                            <button class="post-action-btn">
+                                <span>🔗</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="post-card">
+                        <div class="post-header">
+                            <img src="https://via.placeholder.com/40" alt="User" class="post-avatar">
+                            <div class="post-user-info">
+                                <h4>Sarah Mitchell</h4>
+                                <span class="post-time">1 day ago</span>
+                            </div>
+                        </div>
+                        <p class="post-content">
+                            Weekend vibes! 🌅 Just finished "The Alchemist" for the third time, and it's still as 
+                            magical as the first read. Anyone else obsessed with rereading books? Looking for 
+                            someone who loves discussing life-changing literature. 📚
+                        </p>
+                        <div class="post-actions">
+                            <button class="post-action-btn">
+                                <span>👍</span>
+                                <span>156</span>
+                            </button>
+                            <button class="post-action-btn">
+                                <span>💬</span>
+                                <span>24</span>
+                            </button>
+                            <button class="post-action-btn">
+                                <span>🔗</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <span class="logo-icon">💖</span>
+                <span>HeartNest</span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Help Center</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+        <p class="copyright">© 2025 HeartNest. All rights reserved. Building meaningful connections.</p>
+    </footer>
+
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editProfileModal')">&times;</span>
+            <h2>Edit Profile</h2>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="editName" placeholder="Your name">
+            </div>
+            <div class="form-group">
+                <label>Bio</label>
+                <textarea id="editBio" rows="4" placeholder="Tell us about yourself..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Interests (comma separated)</label>
+                <input type="text" id="editInterests" placeholder="Travel, Music, Books...">
+            </div>
+            <button class="btn-save" onclick="saveProfile()">Save Changes</button>
+        </div>
+    </div>
+
+    <div id="notificationsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('notificationsModal')">&times;</span>
+            <h2>Notifications</h2>
+            <div id="notificationsList" class="notifications-container"></div>
+            <button class="btn-clear" onclick="clearNotifications()">Clear All</button>
+        </div>
+    </div>
+
+    <div id="appearanceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('appearanceModal')">&times;</span>
+            <h2>Appearance Settings</h2>
+            <div class="appearance-options">
+                <div class="appearance-item">
+                    <span>Theme</span>
+                    <select id="themeSelect" onchange="changeTheme()">
+                        <option value="purple">Purple Gradient</option>
+                        <option value="blue">Blue Ocean</option>
+                        <option value="pink">Pink Sunset</option>
+                        <option value="dark">Dark Mode</option>
+                    </select>
+                </div>
+                <div class="appearance-item">
+                    <span>Font Size</span>
+                    <select id="fontSelect" onchange="changeFontSize()">
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+                <div class="appearance-item">
+                    <span>Animations</span>
+                    <label class="switch">
+                        <input type="checkbox" id="animToggle" checked onchange="toggleAnimations()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="privacyModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('privacyModal')">&times;</span>
+            <h2>Privacy Settings</h2>
+            <div class="privacy-options">
+                <div class="privacy-item">
+                    <div>
+                        <h4>Profile Visibility</h4>
+                        <p>Control who can see your profile</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="profileVisToggle" checked onchange="savePrivacy()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="privacy-item">
+                    <div>
+                        <h4>Show Online Status</h4>
+                        <p>Let others see when you're active</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="onlineToggle" checked onchange="savePrivacy()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="privacy-item">
+                    <div>
+                        <h4>Activity Visibility</h4>
+                        <p>Show your likes and comments publicly</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="activityToggle" checked onchange="savePrivacy()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('settingsModal')">&times;</span>
+            <h2 class="modal-title">⚙️ Settings</h2>
+            
+            <div class="settings-section">
+                <h3 class="settings-section-title">Account Settings</h3>
+                <div class="setting-item-full">
+                    <span class="setting-icon">✏️</span>
+                    <div class="setting-text">
+                        <h4>Edit Profile</h4>
+                        <p>Update your name, bio, and interests</p>
+                    </div>
+                    <button class="btn-setting" onclick="closeModal('settingsModal'); openEditProfile();">Edit</button>
+                </div>
+                <div class="setting-item-full">
+                    <span class="setting-icon">🔒</span>
+                    <div class="setting-text">
+                        <h4>Change Password</h4>
+                        <p>Update your account password</p>
+                    </div>
+                    <button class="btn-setting" onclick="openChangePassword()">Change</button>
+                </div>
+                <div class="setting-item-full">
+                    <span class="setting-icon">📧</span>
+                    <div class="setting-text">
+                        <h4>Email Address</h4>
+                        <p id="settingsEmail">Loading...</p>
+                    </div>
+                    <button class="btn-setting" onclick="openChangeEmail()">Update</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-section-title">Notifications</h3>
+                <div class="setting-toggle">
+                    <div class="setting-text">
+                        <h4>Push Notifications</h4>
+                        <p>Receive notifications on your device</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="pushNotifToggle" checked onchange="saveAllSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div class="setting-text">
+                        <h4>Email Notifications</h4>
+                        <p>Get updates via email</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="emailNotifToggle" checked onchange="saveAllSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div class="setting-text">
+                        <h4>Community Updates</h4>
+                        <p>Notifications about new posts and activities</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="communityNotifToggle" checked onchange="saveAllSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div class="setting-text">
+                        <h4>Comment Replies</h4>
+                        <p>Get notified when someone replies to you</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="replyNotifToggle" checked onchange="saveAllSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-section-title">Privacy & Security</h3>
+                <div class="setting-item-full">
+                    <span class="setting-icon">🔐</span>
+                    <div class="setting-text">
+                        <h4>Privacy Settings</h4>
+                        <p>Manage who can see your profile and activity</p>
+                    </div>
+                    <button class="btn-setting" onclick="closeModal('settingsModal'); openPrivacy(event);">Manage</button>
+                </div>
+                <div class="setting-toggle">
+                    <div class="setting-text">
+                        <h4>Two-Factor Authentication</h4>
+                        <p>Add extra security to your account</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="twoFactorToggle" onchange="saveAllSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div class="setting-text">
+                        <h4>Login Alerts</h4>
+                        <p>Get notified of new login attempts</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="loginAlertsToggle" checked onchange="saveAllSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-section-title">Appearance</h3>
+                <div class="setting-item-full">
+                    <span class="setting-icon">🎨</span>
+                    <div class="setting-text">
+                        <h4>Theme</h4>
+                        <p>Choose your preferred color scheme</p>
+                    </div>
+                    <select id="themeSelectMain" onchange="changeThemeFromSettings()" class="setting-select">
+                        <option value="purple">Purple (Default)</option>
+                        <option value="blue">Blue</option>
+                        <option value="pink">Pink</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
+                <div class="setting-item-full">
+                    <span class="setting-icon">🔤</span>
+                    <div class="setting-text">
+                        <h4>Font Size</h4>
+                        <p>Adjust text size for readability</p>
+                    </div>
+                    <select id="fontSelectMain" onchange="changeFontSizeFromSettings()" class="setting-select">
+                        <option value="small">Small</option>
+                        <option value="medium">Medium (Default)</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+                <div class="setting-toggle">
+                    <div class="setting-text">
+                        <h4>Animations</h4>
+                        <p>Enable smooth transitions and effects</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="animToggleMain" checked onchange="toggleAnimationsFromSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div class="setting-text">
+                        <h4>Reduce Motion</h4>
+                        <p>Minimize animations for accessibility</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="reduceMotionToggle" onchange="saveAllSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-section-title">Content Preferences</h3>
+                <div class="setting-toggle">
+                    <div class="setting-text">
+                        <h4>Auto-play Videos</h4>
+                        <p>Videos play automatically in your feed</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="autoplayToggle" checked onchange="saveAllSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div class="setting-text">
+                        <h4>Show Timestamps</h4>
+                        <p>Display posting times on content</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="timestampsToggle" checked onchange="saveAllSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item-full">
+                    <span class="setting-icon">🌐</span>
+                    <div class="setting-text">
+                        <h4>Language</h4>
+                        <p>Choose your preferred language</p>
+                    </div>
+                    <select id="languageSelect" onchange="saveAllSettings()" class="setting-select">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                        <option value="pt">Português</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-section-title">Data & Storage</h3>
+                <div class="setting-item-full">
+                    <span class="setting-icon">💾</span>
+                    <div class="setting-text">
+                        <h4>Download Your Data</h4>
+                        <p>Get a copy of your posts and information</p>
+                    </div>
+                    <button class="btn-setting" onclick="downloadData()">Download</button>
+                </div>
+                <div class="setting-item-full">
+                    <span class="setting-icon">🗑️</span>
+                    <div class="setting-text">
+                        <h4>Clear Cache</h4>
+                        <p>Free up space by clearing temporary data</p>
+                    </div>
+                    <button class="btn-setting" onclick="clearCache()">Clear</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-section-title">Support</h3>
+                <div class="setting-item-full">
+                    <span class="setting-icon">❓</span>
+                    <div class="setting-text">
+                        <h4>Help Center</h4>
+                        <p>Find answers to common questions</p>
+                    </div>
+                    <button class="btn-setting" onclick="window.open('#', '_blank')">Visit</button>
+                </div>
+                <div class="setting-item-full">
+                    <span class="setting-icon">📝</span>
+                    <div class="setting-text">
+                        <h4>Send Feedback</h4>
+                        <p>Share your thoughts and suggestions</p>
+                    </div>
+                    <button class="btn-setting" onclick="openFeedback()">Send</button>
+                </div>
+                <div class="setting-item-full">
+                    <span class="setting-icon">⚠️</span>
+                    <div class="setting-text">
+                        <h4>Report a Problem</h4>
+                        <p>Let us know if something isn't working</p>
+                    </div>
+                    <button class="btn-setting" onclick="openReport()">Report</button>
+                </div>
+            </div>
+
+            <div class="settings-section danger-zone">
+                <h3 class="settings-section-title">Account Management</h3>
+                <div class="setting-item-full">
+                    <span class="setting-icon">🚪</span>
+                    <div class="setting-text">
+                        <h4>Log Out</h4>
+                        <p>Sign out of your account</p>
+                    </div>
+                    <button class="btn-setting btn-danger" onclick="handleLogout()">Log Out</button>
+                </div>
+                <div class="setting-item-full">
+                    <span class="setting-icon">❌</span>
+                    <div class="setting-text">
+                        <h4>Delete Account</h4>
+                        <p>Permanently remove your account and data</p>
+                    </div>
+                    <button class="btn-setting btn-danger" onclick="deleteAccount()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
