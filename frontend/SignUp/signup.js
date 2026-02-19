@@ -43,37 +43,47 @@ function loadSavedEmail() {
     }
 }
 
-function handleSignIn(e) {
-    e.preventDefault();
-    
+async function handleSignup(e) {
+    e.preventDefault(); // prevent page reload
+
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    
+
     if (!email || !password) {
         alert('Please fill in all fields');
         return;
     }
-    
+
     if (!validateEmail(email)) {
         alert('Please enter a valid email address');
         return;
     }
-    
-    saveEmail();
-    
-    let userName = localStorage.getItem('userName');
-    
-    if (!userName) {
-        userName = email.split('@')[0];
-        localStorage.setItem('userName', userName);
+
+    saveEmail(); // keep your "remember me" logic
+
+    try {
+        const response = await fetch('http://localhost:5000/api/auth/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+});
+
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(data.message);
+            localStorage.setItem('currentUser', data.username);
+            window.location.href = '../Dashboard/dashboard.html';
+        } else {
+            alert(data.message || 'Signup failed');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Server error. Check console.');
     }
-    
-    localStorage.setItem('currentUser', userName);
-    
-    setTimeout(() => {
-        window.location.href = '../Dashboard/dashboard.html';
-    }, 3000);
 }
+
 
 function handleGoogleLogin() {
     console.log('Initiating Google login...');
@@ -85,7 +95,7 @@ function handleAppleLogin() {
     alert('Apple login will be available soon');
 }
 
-document.getElementById('signinForm').addEventListener('submit', handleSignIn);
+document.getElementById('signupForm').addEventListener('submit', handleSignup);
 document.getElementById('email').addEventListener('blur', checkEmail);
 
 document.querySelectorAll('.btn-social').forEach(button => {
