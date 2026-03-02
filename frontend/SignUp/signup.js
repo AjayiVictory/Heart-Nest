@@ -62,7 +62,7 @@ async function handleSignup(e) {
     saveEmail(); // keep your "remember me" logic
 
     try {
-        const response = await fetch('http://localhost:5000/api/auth/signup', {
+        const response = await fetch('https://heart-nest.onrender.com', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
