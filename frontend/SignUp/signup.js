@@ -30,33 +30,15 @@ function checkPasswordMatch() {
         : 'rgba(255, 255, 255, 0.3)';
 }
 
-function saveEmail() {
-    const rememberCheckbox = document.getElementById('remember');
-    const emailInput = document.getElementById('email');
-    
-    if (rememberCheckbox.checked) {
-        localStorage.setItem('rememberedEmail', emailInput.value);
-    } else {
-        localStorage.removeItem('rememberedEmail');
-    }
-}
-
-function loadSavedEmail() {
-    const savedEmail = localStorage.getItem('rememberedEmail');
-    if (savedEmail) {
-        document.getElementById('email').value = savedEmail;
-        document.getElementById('remember').checked = true;
-    }
-}
-
 async function handleSignUp(e) {
     e.preventDefault();
+    const username = document.getElementById('username').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     const termsAccepted = document.getElementById('terms').checked;
 
-    if (!email || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword) {
         alert('Please fill in all fields');
         return;
     }
@@ -78,33 +60,26 @@ async function handleSignUp(e) {
     }
 
     try {
-        const res = await fetch('https://heart-nest.onrender.com/api/auth/signup', {
+        const res = await fetch('http://localhost:5000/api/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ username, email, password })
         });
 
         const data = await res.json();
 
-        if (!res.ok) {
+        if (res.ok) {
+            alert('Signup successful! Redirecting to Sign In...');
+            window.location.href = '../SignIn/signin.html'; 
+        } else {
             alert(data.message || 'Signup failed');
-            return;
         }
-
-        alert(data.message || 'Signup successful!');
-        setTimeout(() => {
-            window.location.href = '../SignIn/signin.html';
-        }, 1500);
-
     } catch (err) {
         console.error(err);
         alert('Server error. Please try again later.');
     }
 }
 
-// --- Event Listeners ---
 document.getElementById('signupForm').addEventListener('submit', handleSignUp);
 document.getElementById('email').addEventListener('blur', checkEmailValidity);
 document.getElementById('confirmPassword').addEventListener('input', checkPasswordMatch);
-document.getElementById('remember').addEventListener('change', saveEmail);
-window.addEventListener('load', loadSavedEmail);

@@ -55,7 +55,7 @@ async function handleSignIn(e) {
     }
 
     try {
-        const res = await fetch('https://heart-nest.onrender.com/api/auth/signin', {
+        const res = await fetch('http://localhost:5000/api/auth/signin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -63,19 +63,18 @@ async function handleSignIn(e) {
 
         const data = await res.json();
 
-        if (!res.ok) {
-            alert(data.message || 'Signin failed');
-            return;
+        if (res.ok) {
+            localStorage.setItem('username', data.username);
+            localStorage.setItem('token', data.token);
+
+            alert(`Welcome back, ${data.username}!`);
+            window.location.href = '../Dashboard/dashboard.html';
+        } else {
+            alert(data.message || 'Invalid credentials');
         }
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userName', data.user.username);
-
-        alert(`Welcome back, ${data.user.username}!`);
-        window.location.href = '../Dashboard/dashboard.html';
-
     } catch (err) {
         console.error(err);
-        alert('Server error. Please try again later.');
+        alert('Server error.');
     }
 }
 

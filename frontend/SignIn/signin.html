@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join HeartNest - Sign Up</title>
+    <title>Sign In to HeartNest</title>
     <link rel="stylesheet" href="signin.css">
 </head>
 <body>
@@ -16,7 +16,7 @@
             <nav class="nav">
                 <a href="#features">Features</a>
                 <a href="#about">About</a>
-                <a href="../index.html" class="btn-nav">Sign In</a>
+                <a href="../SignUp/signup.html" class="btn-nav">Sign Up</a>
             </nav>
         </div>
     </header>
@@ -25,15 +25,10 @@
         <div class="container">
             <div class="form-section">
                 <div class="form-card">
-                    <h1>Join HeartNest</h1>
-                    <p class="subtitle">Create your account and start your journey</p>
+                    <h1>Welcome Back</h1>
+                    <p class="subtitle">Sign in to continue your journey</p>
 
-                    <form id="signupForm" class="signup-form">
-                        <div class="form-group">
-                            <label for="fullname">Full Name</label>
-                            <input type="text" id="fullname" placeholder="Enter your full name" required>
-                        </div>
-
+                    <form id="signinForm" class="signin-form">
                         <div class="form-group">
                             <label for="email">Email Address</label>
                             <input type="email" id="email" placeholder="your.email@example.com" required>
@@ -42,29 +37,19 @@
                         <div class="form-group">
                             <label for="password">Password</label>
                             <div class="password-input">
-                                <input type="password" id="password" placeholder="Create a password" required>
+                                <input type="password" id="password" placeholder="Enter your password" required>
                                 <button type="button" class="toggle-password" onclick="togglePassword('password')">
                                     <span class="eye-icon">👁️</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="confirmPassword">Confirm Password</label>
-                            <div class="password-input">
-                                <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
-                                <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">
-                                    <span class="eye-icon">👁️</span>
-                                </button>
-                            </div>
-                        </div>
-
                         <div class="checkbox-group">
-                            <input type="checkbox" id="terms" required>
-                            <label for="terms">I agree to the Terms and Conditions</label>
+                            <input type="checkbox" id="remember">
+                            <label for="remember">Remember me</label>
                         </div>
 
-                        <button type="submit" class="btn-submit">Create Account</button>
+                        <button type="submit" class="btn-submit">Sign In</button>
 
                         <div class="divider">
                             <span>Or continue with</span>
@@ -81,8 +66,8 @@
                             </button>
                         </div>
 
-                        <p class="signin-link">
-                            Already have an account? <a href="../index.html">Sign In</a>
+                        <p class="signup-link">
+                            Don't have an account? <a href="../SignUp/signup.html">Sign Up</a>
                         </p>
                     </form>
                 </div>

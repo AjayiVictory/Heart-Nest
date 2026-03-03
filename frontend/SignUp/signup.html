@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In to HeartNest</title>
+    <title>Join HeartNest - Sign Up</title>
     <link rel="stylesheet" href="signup.css">
 </head>
 <body>
@@ -16,7 +16,7 @@
             <nav class="nav">
                 <a href="#features">Features</a>
                 <a href="#about">About</a>
-                <a href="../SignIn/signin.html" class="btn-nav">Sign Up</a>
+                <a href="../SignIn/signin.html" class="btn-nav">Sign In</a>
             </nav>
         </div>
     </header>
@@ -31,11 +31,10 @@
                 </div>
 
                 <div class="info-content">
-                    <h1>Sign in to<br><span class="brand-gradient">HeartNest</span></h1>
+                    <h1>Join<br><span class="brand-gradient">HeartNest</span></h1>
                     <p class="info-description">
-                        Your dashboard to meaningful connections awaits. Start where you 
-                        left off and continue your journey of emotional growth and 
-                        meaningful connections.
+                        Create your account and start your journey of emotional growth and
+                        meaningful connections with our supportive community.
                     </p>
 
                     <div class="info-features">
@@ -57,10 +56,15 @@
 
             <div class="form-section">
                 <div class="form-card">
-                    <h2>Welcome back</h2>
-                    <p class="form-subtitle">Sign in to continue your journey</p>
+                    <h2>Create Account</h2>
+                    <p class="form-subtitle">Join the community today</p>
 
-                    <form id="signupForm" class="signin-form">
+                    <form id="signupForm" class="signup-form">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" placeholder="Choose a username" required>
+                        </div>
+
                         <div class="form-group">
                             <label for="email">Email Address</label>
                             <input type="email" id="email" placeholder="your.email@example.com" required>
@@ -69,21 +73,29 @@
                         <div class="form-group">
                             <label for="password">Password</label>
                             <div class="password-input">
-                                <input type="password" id="password" placeholder="Enter your password" required>
-                                <button type="button" class="toggle-password" onclick="togglePassword()">
+                                <input type="password" id="password" placeholder="Create a password" required>
+                                <button type="button" class="toggle-password" onclick="togglePassword('password')">
                                     <span class="eye-icon">👁️</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="form-options">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="remember">
-                                <label for="remember">Remember me</label>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <div class="password-input">
+                                <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+                                <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">
+                                    <span class="eye-icon">👁️</span>
+                                </button>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn-submit">Sign In</button>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="terms" required>
+                            <label for="terms">I agree to the Terms and Conditions</label>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Create Account</button>
 
                         <div class="divider">
                             <span>Or continue with</span>
@@ -100,8 +112,8 @@
                             </button>
                         </div>
 
-                        <p class="signup-link">
-                            Don't have an account? <a href="../SignIn/signin.html">Sign Up</a>
+                        <p class="signin-link">
+                            Already have an account? <a href="../SignIn/signin.html">Sign In</a>
                         </p>
                     </form>
                 </div>

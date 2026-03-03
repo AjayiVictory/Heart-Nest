@@ -5,26 +5,26 @@ const User = require('../models/user');
 
 router.post('/signup', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { username, email, password } = req.body;
 
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Please provide email and password' });
+        if (!username || !email || !password) {
+            return res.status(400).json({ message: 'Please provide username, email and password' });
         }
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+        const existingEmail = await User.findOne({ email });
+        if (existingEmail) {
+            return res.status(400).json({ message: 'Email already in use' });
         }
 
-        const username = email.split('@')[0];
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const existingUsername = await User.findOne({ username });
+        if (existingUsername) {
+            return res.status(400).json({ message: 'Username already taken' });
+        }
 
         const newUser = new User({
             username,
             email,
-            password: hashedPassword
+            password
         });
 
         await newUser.save();
@@ -57,7 +57,7 @@ router.post('/signin', async (req, res) => {
         res.status(200).json({
             message: 'Signin successful',
             username: user.username,
-            token: 'fake-jwt-token-for-now' // later you can use JWT here
+            token: 'fake-jwt-token-for-now'
         });
     } catch (err) {
         console.error(err);
