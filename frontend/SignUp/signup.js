@@ -69,8 +69,12 @@ async function handleSignUp(e) {
         const data = await res.json();
 
         if (res.ok) {
+            localStorage.setItem('username', data.username);
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('userId', data.userId);
+            sessionStorage.setItem('prefillEmail', email);
             alert('Signup successful! Redirecting to Sign In...');
-            window.location.href = '../SignIn/signin.html'; 
+            window.location.href = '../SignIn/signin.html';
         } else {
             alert(data.message || 'Signup failed');
         }

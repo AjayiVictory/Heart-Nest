@@ -51,7 +51,7 @@
             <div class="left-column">
                 <div class="profile-card">
                     <div class="profile-header">
-                        <img src="https://via.placeholder.com/80" alt="Profile" class="profile-avatar">
+                        <img src="https://via.placeholder.com/80" alt="Profile" class="profile-avatar" id="dashProfilePic">
                         <div class="profile-info">
                             <h2 id="userName">Sarah Mitchell</h2>
                             <p class="profile-bio">
@@ -65,7 +65,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <span class="stat-value" id="dashLikeCount">0</span>
-                                    <span class="stat-label">Likes Given</span>
+                                    <span class="stat-label">Followers</span>
                                 </div>
                                 <div class="stat-item">
                                     <span class="stat-value" id="dashSavedCount">0</span>
@@ -73,7 +73,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <span class="stat-value" id="dashConnectionCount">0</span>
-                                    <span class="stat-label">Connections</span>
+                                    <span class="stat-label">Following</span>
                                 </div>
                             </div>
                         </div>
@@ -102,89 +102,6 @@
                 </div>
 
                 <div class="posts-feed">
-                    <div class="post-card">
-                        <div class="post-header">
-                            <img src="https://via.placeholder.com/40" alt="User" class="post-avatar">
-                            <div class="post-user-info">
-                                <h4>Sarah Mitchell</h4>
-                                <span class="post-time">2 hours ago</span>
-                            </div>
-                        </div>
-                        <p class="post-content">
-                            I just joined this wonderful community! I'm excited to meet new people. I'm looking for 
-                            someone who's up for spontaneous road trips and deep late-night conversations about life 
-                            and dreams. Let's connect!
-                        </p>
-                        <div class="post-actions">
-                            <button class="post-action-btn">
-                                <span>👍</span>
-                                <span>45</span>
-                            </button>
-                            <button class="post-action-btn">
-                                <span>💬</span>
-                                <span>7</span>
-                            </button>
-                            <button class="post-action-btn">
-                                <span>🔗</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="post-card">
-                        <div class="post-header">
-                            <img src="https://via.placeholder.com/40" alt="User" class="post-avatar">
-                            <div class="post-user-info">
-                                <h4>Sarah Mitchell</h4>
-                                <span class="post-time">5 hours ago</span>
-                            </div>
-                        </div>
-                        <p class="post-content">
-                            Coffee date at Brew Haven this morning was amazing! There's something magical about 
-                            sharing stories over a warm cup of coffee. If you're a fellow coffee enthusiast, we 
-                            should definitely chat! ☕✨
-                        </p>
-                        <div class="post-actions">
-                            <button class="post-action-btn">
-                                <span>👍</span>
-                                <span>89</span>
-                            </button>
-                            <button class="post-action-btn">
-                                <span>💬</span>
-                                <span>12</span>
-                            </button>
-                            <button class="post-action-btn">
-                                <span>🔗</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="post-card">
-                        <div class="post-header">
-                            <img src="https://via.placeholder.com/40" alt="User" class="post-avatar">
-                            <div class="post-user-info">
-                                <h4>Sarah Mitchell</h4>
-                                <span class="post-time">1 day ago</span>
-                            </div>
-                        </div>
-                        <p class="post-content">
-                            Weekend vibes! 🌅 Just finished "The Alchemist" for the third time, and it's still as 
-                            magical as the first read. Anyone else obsessed with rereading books? Looking for 
-                            someone who loves discussing life-changing literature. 📚
-                        </p>
-                        <div class="post-actions">
-                            <button class="post-action-btn">
-                                <span>👍</span>
-                                <span>156</span>
-                            </button>
-                            <button class="post-action-btn">
-                                <span>💬</span>
-                                <span>24</span>
-                            </button>
-                            <button class="post-action-btn">
-                                <span>🔗</span>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -217,6 +134,13 @@
             <div class="form-group">
                 <label>Bio</label>
                 <textarea id="editBio" rows="4" placeholder="Tell us about yourself..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Profile Picture</label>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
+                    <img id="editProfilePicPreview" src="https://via.placeholder.com/60" alt="Preview" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.3);">
+                    <input type="file" id="editProfilePic" accept="image/*" style="flex:1;color:inherit;" onchange="previewAvatar(this,'editProfilePicPreview')">
+                </div>
             </div>
             <div class="form-group">
                 <label>Interests (comma separated)</label>

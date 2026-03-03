@@ -1,122 +1,125 @@
-let currentUser = localStorage.getItem('currentUser') || 'Guest User';
-let allPosts = JSON.parse(localStorage.getItem('allPosts')) || [];
-let userPosts = [];
-let likedPosts = [];
-let savedPosts = [];
+const API = 'https://heart-nest.onrender.com';
 
-function getCurrentUser() {
-    return currentUser;
-}
-
-function setCurrentUser(name) {
-    currentUser = name;
-    localStorage.setItem('currentUser', name);
-    updateProfileDisplay();
-}
-
-function updateProfileDisplay() {
-    const profileName = document.getElementById('userName');
-    if (profileName) {
-        profileName.textContent = currentUser;
-    }
-    updateDashboardStats();
-}
-
-function updateDashboardStats() {
-    const userPosts = getUserPosts();
-    const likedIds = JSON.parse(localStorage.getItem(`likedPosts_${currentUser}`)) || [];
-    const savedIds = JSON.parse(localStorage.getItem(`savedPosts_${currentUser}`)) || [];
-    const connections = parseInt(localStorage.getItem(`connections_${currentUser}`)) || 0;
-    
-    const postCount = document.getElementById('dashPostCount');
-    const likeCount = document.getElementById('dashLikeCount');
-    const savedCount = document.getElementById('dashSavedCount');
-    const connectionCount = document.getElementById('dashConnectionCount');
-    
-    if (postCount) postCount.textContent = userPosts.length;
-    if (likeCount) likeCount.textContent = likedIds.length;
-    if (savedCount) savedCount.textContent = savedIds.length;
-    if (connectionCount) connectionCount.textContent = connections;
-}
-
-function incrementConnections(postUser) {
-    if (postUser === currentUser) return;
-    
-    const connections = parseInt(localStorage.getItem(`connections_${currentUser}`)) || 0;
-    localStorage.setItem(`connections_${currentUser}`, connections + 1);
-    updateDashboardStats();
-}
-
-function createPost(content) {
-    const post = {
-        id: Date.now(),
-        user: currentUser,
-        time: 'Just now',
-        content: content,
-        likes: 0,
-        comments: 0,
-        likedBy: [],
-        timestamp: new Date().toISOString()
+function getAuthHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
     };
-    
-    allPosts.unshift(post);
-    userPosts.unshift(post);
-    localStorage.setItem('allPosts', JSON.stringify(allPosts));
-    
-    return post;
 }
 
-function publishPost() {
+let currentUser = localStorage.getItem('username') || 'Guest';
+let currentUserId = localStorage.getItem('userId');
+
+async function updateDashboardStats() {
+    try {
+        const res = await fetch(`${API}/api/users/me`, { headers: getAuthHeaders() });
+        if (res.status === 401 || res.status === 403) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('username');
+            window.location.href = '../SignIn/signin.html';
+            return;
+        }
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const postCount = document.getElementById('dashPostCount');
+        const likeCount = document.getElementById('dashLikeCount');
+        const connectionCount = document.getElementById('dashConnectionCount');
+        if (postCount) postCount.textContent = data.postsCount || 0;
+        if (likeCount) likeCount.textContent = data.followersCount || 0;
+        if (connectionCount) connectionCount.textContent = data.followingCount || 0;
+
+        const nameEl = document.getElementById('userName');
+        if (nameEl) nameEl.textContent = data.username;
+
+        const picEl = document.getElementById('dashProfilePic');
+        if (picEl && data.profilePic) picEl.src = data.profilePic;
+    } catch (err) {
+        console.error('Failed to load stats:', err);
+    }
+}
+
+async function publishPost() {
     const textarea = document.getElementById('postContent');
     const content = textarea.value.trim();
-    
     if (!content) {
         alert('Please write something before posting');
         return;
     }
-    
-    createPost(content);
-    textarea.value = '';
-    switchTab('posts');
-    updateDashboardStats();
+    try {
+        const res = await fetch(`${API}/api/posts`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ content })
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            alert(data.message || 'Failed to post');
+            return;
+        }
+        textarea.value = '';
+        await loadPostsFromAPI('posts');
+        await updateDashboardStats();
+    } catch (err) {
+        console.error(err);
+        alert('Server error. Please try again.');
+    }
 }
 
-function getAllPosts() {
-    return allPosts.filter(post => post.user !== currentUser);
-}
-
-function getUserPosts() {
-    return allPosts.filter(post => post.user === currentUser);
+function formatTime(isoString) {
+    const diff = Date.now() - new Date(isoString).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
 }
 
 function buildPostHTML(post) {
-    const isLiked = post.likedBy && post.likedBy.includes(currentUser);
-    const isSaved = post.savedBy && post.savedBy.includes(currentUser);
-    const likeClass = isLiked ? 'liked' : '';
-    const saveClass = isSaved ? 'saved' : '';
-    
+    const isOwn = post.author._id === currentUserId;
+    const avatar = post.author.profilePic
+        ? `<img src="${post.author.profilePic}" alt="${post.author.username}" class="post-avatar">`
+        : `<img src="https://via.placeholder.com/40" alt="${post.author.username}" class="post-avatar">`;
+    const deleteBtn = isOwn
+        ? `<button class="post-action-btn" onclick="deletePost('${post._id}')"><span>🗑️</span></button>`
+        : '';
+    const commentsHtml = (post.comments || []).map(c => {
+        const isOwnComment = c.author._id === currentUserId;
+        return `<div class="comment-item" id="comment-${c._id}">
+            <strong>${c.author.username}:</strong> ${c.content}
+            ${isOwnComment ? `<button onclick="deleteComment('${post._id}','${c._id}')">✕</button>` : ''}
+        </div>`;
+    }).join('');
+
     return `
-        <div class="post-card" data-post-id="${post.id}">
+        <div class="post-card" id="post-${post._id}">
             <div class="post-header">
-                <img src="https://via.placeholder.com/40" alt="${post.user}" class="post-avatar">
+                ${avatar}
                 <div class="post-user-info">
-                    <h4>${post.user}</h4>
-                    <span class="post-time">${post.time}</span>
+                    <h4>${post.author.username}</h4>
+                    <span class="post-time">${formatTime(post.createdAt)}</span>
                 </div>
+                ${deleteBtn}
             </div>
             <p class="post-content">${post.content}</p>
             <div class="post-actions">
-                <button class="post-action-btn ${likeClass}" onclick="toggleLike(${post.id})">
+                <button class="post-action-btn" onclick="toggleLike('${post._id}', this)">
                     <span>👍</span>
-                    <span>${post.likes}</span>
+                    <span id="likeCount-${post._id}">${post.likes.length}</span>
                 </button>
-                <button class="post-action-btn" onclick="showComments(${post.id})">
+                <button class="post-action-btn" onclick="toggleComments('${post._id}')">
                     <span>💬</span>
-                    <span>${post.comments}</span>
+                    <span>${post.comments.length}</span>
                 </button>
-                <button class="post-action-btn ${saveClass}" onclick="toggleSave(${post.id})">
-                    <span>🔖</span>
-                </button>
+            </div>
+            <div class="comments-section" id="comments-${post._id}" style="display:none">
+                <div class="comments-list">${commentsHtml}</div>
+                <div class="comment-input">
+                    <input type="text" id="commentInput-${post._id}" placeholder="Write a comment...">
+                    <button onclick="addComment('${post._id}')">Send</button>
+                </div>
             </div>
         </div>
     `;
@@ -125,285 +128,202 @@ function buildPostHTML(post) {
 function renderPosts(posts) {
     const feed = document.querySelector('.posts-feed');
     if (!feed) return;
-    
     if (posts.length === 0) {
-        feed.innerHTML = '<p style="text-align: center; opacity: 0.7;">No posts yet</p>';
+        feed.innerHTML = '<p style="text-align: center; opacity: 0.7; padding: 20px;">No posts yet</p>';
         return;
     }
-    
     feed.innerHTML = posts.map(buildPostHTML).join('');
 }
 
-function toggleLike(postId) {
-    const post = allPosts.find(p => p.id === postId);
-    if (!post) return;
-    
-    if (!post.likedBy) post.likedBy = [];
-    
-    const index = post.likedBy.indexOf(currentUser);
-    if (index > -1) {
-        post.likedBy.splice(index, 1);
-        post.likes--;
-        const likedIndex = likedPosts.findIndex(p => p.id === postId);
-        if (likedIndex > -1) {
-            likedPosts.splice(likedIndex, 1);
-        }
-    } else {
-        post.likedBy.push(currentUser);
-        post.likes++;
-        if (!likedPosts.find(p => p.id === postId)) {
-            likedPosts.push(post);
-        }
-        incrementConnections(post.user);
+async function loadPostsFromAPI(tabType) {
+    const endpoints = {
+        posts: `${API}/api/posts/mine`,
+        liked: `${API}/api/posts/liked`,
+        saved: `${API}/api/posts/mine`
+    };
+    try {
+        const res = await fetch(endpoints[tabType] || endpoints.posts, { headers: getAuthHeaders() });
+        if (!res.ok) return;
+        const posts = await res.json();
+        renderPosts(posts);
+    } catch (err) {
+        console.error('Failed to load posts:', err);
     }
-    
-    localStorage.setItem('allPosts', JSON.stringify(allPosts));
-    saveLikedPosts();
-    refreshCurrentView();
-    updateDashboardStats();
 }
 
-function toggleSave(postId) {
-    const post = allPosts.find(p => p.id === postId);
-    if (!post) return;
-    
-    if (!post.savedBy) post.savedBy = [];
-    
-    const isSaved = post.savedBy.includes(currentUser);
-    const index = savedPosts.findIndex(p => p.id === postId);
-    
-    if (isSaved) {
-        post.savedBy.splice(post.savedBy.indexOf(currentUser), 1);
-        if (index > -1) {
-            savedPosts.splice(index, 1);
-        }
-    } else {
-        post.savedBy.push(currentUser);
-        if (index === -1) {
-            savedPosts.push(post);
-        }
+async function toggleLike(postId, btn) {
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}/like`, {
+            method: 'PUT',
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const countEl = document.getElementById(`likeCount-${postId}`);
+        if (countEl) countEl.textContent = data.likeCount;
+        if (btn) btn.classList.toggle('liked', data.liked);
+    } catch (err) {
+        console.error(err);
     }
-    
-    localStorage.setItem('allPosts', JSON.stringify(allPosts));
-    saveSavedPosts();
-    refreshCurrentView();
-    updateDashboardStats();
 }
 
-function saveLikedPosts() {
-    const likedIds = likedPosts.map(p => p.id);
-    localStorage.setItem(`likedPosts_${currentUser}`, JSON.stringify(likedIds));
+function toggleComments(postId) {
+    const section = document.getElementById(`comments-${postId}`);
+    if (section) {
+        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    }
 }
 
-function saveSavedPosts() {
-    const savedIds = savedPosts.map(p => p.id);
-    localStorage.setItem(`savedPosts_${currentUser}`, JSON.stringify(savedIds));
+async function addComment(postId) {
+    const input = document.getElementById(`commentInput-${postId}`);
+    const content = input.value.trim();
+    if (!content) return;
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ content })
+        });
+        if (!res.ok) return;
+        const comment = await res.json();
+        const list = document.querySelector(`#comments-${postId} .comments-list`);
+        if (list) {
+            const isOwnComment = comment.author._id === currentUserId;
+            const div = document.createElement('div');
+            div.className = 'comment-item';
+            div.id = `comment-${comment._id}`;
+            div.innerHTML = `<strong>${comment.author.username}:</strong> ${comment.content}
+                ${isOwnComment ? `<button onclick="deleteComment('${postId}','${comment._id}')">✕</button>` : ''}`;
+            list.appendChild(div);
+        }
+        input.value = '';
+    } catch (err) {
+        console.error(err);
+    }
 }
 
-function loadUserLikesAndSaves() {
-    const likedIds = JSON.parse(localStorage.getItem(`likedPosts_${currentUser}`)) || [];
-    const savedIds = JSON.parse(localStorage.getItem(`savedPosts_${currentUser}`)) || [];
-    
-    likedPosts = allPosts.filter(post => likedIds.includes(post.id));
-    savedPosts = allPosts.filter(post => savedIds.includes(post.id));
+async function deleteComment(postId, commentId) {
+    if (!confirm('Delete this comment?')) return;
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments/${commentId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        if (res.ok) {
+            const el = document.getElementById(`comment-${commentId}`);
+            if (el) el.remove();
+        }
+    } catch (err) {
+        console.error(err);
+    }
 }
 
-function showComments(postId) {
-    console.log('Comments for post:', postId);
+async function deletePost(postId) {
+    if (!confirm('Delete this post?')) return;
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        if (res.ok) {
+            const el = document.getElementById(`post-${postId}`);
+            if (el) el.remove();
+            await updateDashboardStats();
+        }
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 function switchTab(tabType) {
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(t => t.classList.remove('active'));
-    
     const postCreateBox = document.querySelector('.post-create-box');
-    
-    let posts = [];
-    if (tabType === 'posts') {
-        posts = getUserPosts();
-        tabs[0].classList.add('active');
-        if (postCreateBox) postCreateBox.style.display = 'block';
-    } else if (tabType === 'liked') {
-        loadUserLikesAndSaves();
-        posts = likedPosts;
-        tabs[1].classList.add('active');
-        if (postCreateBox) postCreateBox.style.display = 'none';
-    } else if (tabType === 'saved') {
-        loadUserLikesAndSaves();
-        posts = savedPosts;
-        tabs[2].classList.add('active');
-        if (postCreateBox) postCreateBox.style.display = 'none';
-    }
-    
-    renderPosts(posts);
+    const tabIndex = { posts: 0, liked: 1, saved: 2 };
+    const idx = tabIndex[tabType] ?? 0;
+    if (tabs[idx]) tabs[idx].classList.add('active');
+    if (postCreateBox) postCreateBox.style.display = tabType === 'posts' ? 'block' : 'none';
+    loadPostsFromAPI(tabType);
 }
 
-function refreshCurrentView() {
-    const activeTab = document.querySelector('.tab-btn.active');
-    const tabIndex = Array.from(document.querySelectorAll('.tab-btn')).indexOf(activeTab);
-    const tabTypes = ['posts', 'liked', 'saved'];
-    switchTab(tabTypes[tabIndex] || 'posts');
-}
-
-const samplePostTemplates = [
-    "Taking time for self-reflection today. Setting healthy boundaries has transformed my emotional wellbeing. Grateful for this journey! 🙏",
-    "Morning devotional was exactly what my soul needed. There's something powerful about starting the day with intention and gratitude. ✨",
-    "Sharing my testimony: Learning to trust God through difficult seasons has strengthened my faith. Remember, you're never alone on this journey. 💙",
-    "Prayer changes everything. Feeling blessed by God's faithfulness in my life today. 🙌",
-    "Working on forgiving myself and others. It's a journey, but healing is happening! 💜",
-    "Just finished reading my Bible plan for today. God's word never fails to speak to my heart. 📖",
-    "Grateful for this community of believers who support and encourage each other. We're stronger together! 💪",
-    "Practicing mindfulness and staying present. Mental health matters and God cares about our wholeness. 🧘‍♀️",
-    "Reminder: You are loved, you are worthy, and you are never alone. God is with you always. ❤️",
-    "Celebrating small victories today! Every step forward in emotional healing counts. 🌟"
-];
-
-const userNames = ['Alex Johnson', 'Emma Davis', 'Michael Chen', 'Sarah Williams', 'David Martinez', 'Lisa Anderson', 'James Taylor', 'Maria Garcia', 'John Smith', 'Rachel Brown'];
-
-const allUsers = [
-    { name: 'Alex Johnson', bio: 'Believer seeking emotional growth', posts: 45 },
-    { name: 'Emma Davis', bio: 'Faith and wellness advocate', posts: 32 },
-    { name: 'Michael Chen', bio: 'Walking by faith, not by sight', posts: 28 },
-    { name: 'Sarah Williams', bio: 'Grateful heart, positive mind', posts: 51 },
-    { name: 'David Martinez', bio: 'Living intentionally with purpose', posts: 19 },
-    { name: 'Lisa Anderson', bio: 'Prayer warrior and encourager', posts: 67 },
-    { name: 'James Taylor', bio: 'Finding peace in God\'s presence', posts: 23 },
-    { name: 'Maria Garcia', bio: 'Spreading love and light', posts: 38 },
-    { name: 'John Smith', bio: 'Journey of faith and healing', posts: 41 },
-    { name: 'Rachel Brown', bio: 'Believer in emotional wellbeing', posts: 29 }
-];
-
-function searchUsers() {
+async function searchUsers() {
     const searchInput = document.getElementById('userSearch');
     const searchResults = document.getElementById('searchResults');
-    const query = searchInput.value.trim().toLowerCase();
-    
-    if (query.length === 0) {
+    const query = searchInput.value.trim();
+    if (!query) {
         searchResults.classList.remove('active');
         return;
     }
-    
-    const filteredUsers = allUsers.filter(user => 
-        user.name.toLowerCase().includes(query) ||
-        user.bio.toLowerCase().includes(query)
-    );
-    
-    if (filteredUsers.length === 0) {
-        searchResults.innerHTML = '<div class="search-no-results">No users found</div>';
-        searchResults.classList.add('active');
-        return;
-    }
-    
-    searchResults.innerHTML = filteredUsers.map(user => {
-        const initials = user.name.split(' ').map(n => n[0]).join('');
-        return `
-            <div class="search-result-item" onclick="viewUserProfile('${user.name}')">
-                <div class="search-result-avatar">${initials}</div>
-                <div class="search-result-info">
-                    <h4 class="search-result-name">${user.name}</h4>
-                    <p class="search-result-meta">${user.bio} · ${user.posts} posts</p>
+    try {
+        const res = await fetch(`${API}/api/users/search?q=${encodeURIComponent(query)}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) return;
+        const users = await res.json();
+        if (users.length === 0) {
+            searchResults.innerHTML = '<div class="search-no-results">No users found</div>';
+            searchResults.classList.add('active');
+            return;
+        }
+        searchResults.innerHTML = users.map(user => {
+            const pic = user.profilePic
+                ? `<img src="${user.profilePic}" class="search-result-avatar" style="width:36px;height:36px;border-radius:50%;object-fit:cover">`
+                : `<div class="search-result-avatar">${user.username[0].toUpperCase()}</div>`;
+            return `
+                <div class="search-result-item" onclick="viewUserProfile('${user._id}')">
+                    ${pic}
+                    <div class="search-result-info">
+                        <h4 class="search-result-name">${user.username}</h4>
+                        <p class="search-result-meta">${user.bio || ''}</p>
+                    </div>
                 </div>
-            </div>
-        `;
-    }).join('');
-    
-    searchResults.classList.add('active');
+            `;
+        }).join('');
+        searchResults.classList.add('active');
+    } catch (err) {
+        console.error(err);
+    }
 }
 
-function viewUserProfile(userName) {
+function viewUserProfile(userId) {
     document.getElementById('searchResults').classList.remove('active');
     document.getElementById('userSearch').value = '';
-    
-    alert(`Viewing profile of ${userName}\n\nThis feature will show their full profile with posts and bio.`);
+    window.location.href = `../profile/profile.html?userId=${userId}`;
 }
 
 document.addEventListener('click', function(event) {
     const searchContainer = document.querySelector('.search-container');
     const searchResults = document.getElementById('searchResults');
-    
     if (searchContainer && !searchContainer.contains(event.target)) {
         searchResults.classList.remove('active');
     }
 });
 
-function generateRandomPost() {
-    const randomUser = userNames[Math.floor(Math.random() * userNames.length)];
-    const randomContent = samplePostTemplates[Math.floor(Math.random() * samplePostTemplates.length)];
-    const randomTime = ['Just now', '5 minutes ago', '15 minutes ago', '1 hour ago', '2 hours ago', '5 hours ago'][Math.floor(Math.random() * 6)];
-    
-    return {
-        id: Date.now() + Math.random(),
-        user: randomUser,
-        time: randomTime,
-        content: randomContent,
-        likes: Math.floor(Math.random() * 500),
-        comments: Math.floor(Math.random() * 50),
-        likedBy: [],
-        timestamp: new Date().toISOString()
-    };
-}
-
-function loadSampleData() {
-    if (allPosts.length === 0) {
-        for (let i = 0; i < 5; i++) {
-            allPosts.push(generateRandomPost());
-        }
-        localStorage.setItem('allPosts', JSON.stringify(allPosts));
+function handleLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('username');
+        window.location.href = '../index.html';
     }
 }
-
-function loadMorePosts() {
-    for (let i = 0; i < 3; i++) {
-        allPosts.push(generateRandomPost());
-    }
-    localStorage.setItem('allPosts', JSON.stringify(allPosts));
-    switchTab('posts');
-}
-
-let isLoadingMore = false;
-window.addEventListener('scroll', () => {
-    if (isLoadingMore) return;
-    
-    const scrollPosition = window.innerHeight + window.scrollY;
-    const pageHeight = document.documentElement.scrollHeight;
-    
-    if (scrollPosition >= pageHeight - 200) {
-        isLoadingMore = true;
-        setTimeout(() => {
-            loadMorePosts();
-            isLoadingMore = false;
-        }, 500);
-    }
-});
 
 function init() {
-    const savedUser = localStorage.getItem('currentUser');
-    const userName = localStorage.getItem('userName');
-    
-    if (savedUser) {
-        currentUser = savedUser;
-    } else if (userName) {
-        currentUser = userName;
-        localStorage.setItem('currentUser', userName);
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '../SignIn/signin.html';
+        return;
     }
-    
-    loadSampleData();
-    loadUserLikesAndSaves();
-    updateProfileDisplay();
-    
+    currentUser = localStorage.getItem('username') || 'Guest';
+    currentUserId = localStorage.getItem('userId');
+
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach((tab, index) => {
         tab.onclick = () => switchTab(['posts', 'liked', 'saved'][index]);
     });
-    
-    switchTab('posts');
-}
 
-function handleLogout() {
-    if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('currentUser');
-        window.location.href = '../index.html';
-    }
+    updateDashboardStats();
+    switchTab('posts');
 }
 
 function openModal(modalId) {
@@ -414,39 +334,87 @@ function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
 }
 
-function openEditProfile() {
-    const bio = localStorage.getItem('userBio') || '';
+function previewAvatar(input, previewId) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const el = document.getElementById(previewId);
+        if (el) el.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+async function openEditProfile() {
+    try {
+        const res = await fetch(`${API}/api/users/me`, { headers: getAuthHeaders() });
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('editName').value = data.username || '';
+            document.getElementById('editBio').value = data.bio || '';
+            const preview = document.getElementById('editProfilePicPreview');
+            if (preview) preview.src = data.profilePic || 'https://via.placeholder.com/60';
+        }
+    } catch (err) {
+        console.error(err);
+    }
     const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
-    
-    document.getElementById('editName').value = currentUser;
-    document.getElementById('editBio').value = bio;
     document.getElementById('editInterests').value = interests.join(', ');
-    
     openModal('editProfileModal');
 }
 
-function saveProfile() {
-    const name = document.getElementById('editName').value.trim();
+async function saveProfile() {
     const bio = document.getElementById('editBio').value.trim();
     const interestsInput = document.getElementById('editInterests').value.trim();
-    
-    if (!name) {
-        alert('Name cannot be empty!');
+    const fileInput = document.getElementById('editProfilePic');
+
+    // Upload avatar if a file was selected
+    if (fileInput && fileInput.files[0]) {
+        try {
+            const formData = new FormData();
+            formData.append('avatar', fileInput.files[0]);
+            const token = localStorage.getItem('token');
+            const uploadRes = await fetch(`${API}/api/users/me/avatar`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
+            if (uploadRes.ok) {
+                const uploadData = await uploadRes.json();
+                const picEl = document.getElementById('dashProfilePic');
+                if (picEl) picEl.src = uploadData.profilePic;
+            } else {
+                alert('Profile picture upload failed. Saving other changes.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Profile picture upload failed. Saving other changes.');
+        }
+    }
+
+    try {
+        const res = await fetch(`${API}/api/users/me`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ bio })
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            alert(data.message || 'Failed to save profile');
+            return;
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Server error. Please try again.');
         return;
     }
-    
+
     const interests = interestsInput ? interestsInput.split(',').map(i => i.trim()).filter(i => i) : [];
-    
-    currentUser = name;
-    localStorage.setItem('currentUser', name);
-    localStorage.setItem('userName', name);
-    updateProfileDisplay();
-    
-    localStorage.setItem('userBio', bio);
     localStorage.setItem('userInterests', JSON.stringify(interests));
-    
+
     closeModal('editProfileModal');
     alert('Profile updated successfully!');
+    await updateDashboardStats();
 }
 
 function openNotifications(event) {

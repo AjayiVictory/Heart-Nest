@@ -35,8 +35,14 @@ function saveEmail() {
 }
 
 function loadSavedEmail() {
-    const savedEmail = localStorage.getItem('rememberedEmail');
+    const prefillEmail = sessionStorage.getItem('prefillEmail');
+    if (prefillEmail) {
+        document.getElementById('email').value = prefillEmail;
+        sessionStorage.removeItem('prefillEmail');
+        return;
+    }
 
+    const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
         document.getElementById('email').value = savedEmail;
         document.getElementById('remember').checked = true;
@@ -66,6 +72,7 @@ async function handleSignIn(e) {
         if (res.ok) {
             localStorage.setItem('username', data.username);
             localStorage.setItem('token', data.token);
+            localStorage.setItem('userId', data.userId);
 
             alert(`Welcome back, ${data.username}!`);
             window.location.href = '../Dashboard/dashboard.html';

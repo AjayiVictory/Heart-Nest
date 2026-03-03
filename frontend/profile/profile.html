@@ -44,10 +44,11 @@
                 <div class="profile-card">
                     <div class="profile-banner"></div>
                     <div class="profile-info-section">
-                        <img src="https://via.placeholder.com/120" alt="Profile" class="profile-pic">
+                        <img src="https://via.placeholder.com/120" alt="Profile" class="profile-pic" id="profilePicImg">
                         <h1 id="profileName">User Name</h1>
                         <p id="profileEmail">user@example.com</p>
                         <button class="btn-edit" onclick="toggleEdit()">Edit Profile</button>
+                        <button id="followBtn" class="btn-edit" style="display:none" onclick="handleFollow()">Follow</button>
                     </div>
                 </div>
 
@@ -55,6 +56,7 @@
                     <div class="detail-card">
                         <h3>About Me</h3>
                         <textarea id="bioInput" readonly rows="4" placeholder="Tell us about yourself..."></textarea>
+                        <input type="file" id="profilePicInput" accept="image/*" disabled style="display:none;width:100%;margin-top:8px;color:inherit;" onchange="previewAvatar(this,'profilePicImg')">
                     </div>
 
                     <div class="detail-card">
@@ -97,12 +99,12 @@
                                 <span class="stat-label">Posts</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-number" id="likeCount">0</span>
-                                <span class="stat-label">Likes Given</span>
+                                <span class="stat-number" id="followerCount">0</span>
+                                <span class="stat-label">Followers</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-number" id="connectionCount">0</span>
-                                <span class="stat-label">Connections</span>
+                                <span class="stat-number" id="followingCount">0</span>
+                                <span class="stat-label">Following</span>
                             </div>
                         </div>
                     </div>
