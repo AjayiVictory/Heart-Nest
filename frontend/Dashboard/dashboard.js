@@ -334,15 +334,32 @@ function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
 }
 
-function previewAvatar(input, previewId) {
+async function uploadAvatarImmediate(input, previewId) {
     const file = input.files[0];
     if (!file) return;
+
+    // Instant local preview
     const reader = new FileReader();
     reader.onload = e => {
         const el = document.getElementById(previewId);
         if (el) el.src = e.target.result;
     };
     reader.readAsDataURL(file);
+
+    // Upload to server
+    try {
+        const formData = new FormData();
+        formData.append('avatar', file);
+        const res = await fetch(`${API}/api/users/me/avatar`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+            body: formData
+        });
+        if (!res.ok) alert('Upload failed. Please try again.');
+    } catch (err) {
+        console.error(err);
+        alert('Upload failed. Please try again.');
+    }
 }
 
 async function openEditProfile() {
@@ -352,8 +369,6 @@ async function openEditProfile() {
             const data = await res.json();
             document.getElementById('editName').value = data.username || '';
             document.getElementById('editBio').value = data.bio || '';
-            const preview = document.getElementById('editProfilePicPreview');
-            if (preview) preview.src = data.profilePic || 'https://via.placeholder.com/60';
         }
     } catch (err) {
         console.error(err);
@@ -366,31 +381,6 @@ async function openEditProfile() {
 async function saveProfile() {
     const bio = document.getElementById('editBio').value.trim();
     const interestsInput = document.getElementById('editInterests').value.trim();
-    const fileInput = document.getElementById('editProfilePic');
-
-    // Upload avatar if a file was selected
-    if (fileInput && fileInput.files[0]) {
-        try {
-            const formData = new FormData();
-            formData.append('avatar', fileInput.files[0]);
-            const token = localStorage.getItem('token');
-            const uploadRes = await fetch(`${API}/api/users/me/avatar`, {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token },
-                body: formData
-            });
-            if (uploadRes.ok) {
-                const uploadData = await uploadRes.json();
-                const picEl = document.getElementById('dashProfilePic');
-                if (picEl) picEl.src = uploadData.profilePic;
-            } else {
-                alert('Profile picture upload failed. Saving other changes.');
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Profile picture upload failed. Saving other changes.');
-        }
-    }
 
     try {
         const res = await fetch(`${API}/api/users/me`, {

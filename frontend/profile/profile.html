@@ -44,7 +44,11 @@
                 <div class="profile-card">
                     <div class="profile-banner"></div>
                     <div class="profile-info-section">
-                        <img src="https://via.placeholder.com/120" alt="Profile" class="profile-pic" id="profilePicImg">
+                        <label id="profilePicLabel" style="cursor:default;position:relative;display:inline-block;">
+                            <img src="https://via.placeholder.com/120" alt="Profile" class="profile-pic" id="profilePicImg" style="display:block;">
+                            <span id="profilePicCameraIcon" style="display:none;position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.55);border-radius:50%;width:30px;height:30px;align-items:center;justify-content:center;font-size:15px;pointer-events:none;">📷</span>
+                            <input type="file" id="profilePicInput" accept="image/*" disabled style="display:none" onchange="uploadAvatarImmediate(this,'profilePicImg')">
+                        </label>
                         <h1 id="profileName">User Name</h1>
                         <p id="profileEmail">user@example.com</p>
                         <button class="btn-edit" onclick="toggleEdit()">Edit Profile</button>
@@ -56,7 +60,6 @@
                     <div class="detail-card">
                         <h3>About Me</h3>
                         <textarea id="bioInput" readonly rows="4" placeholder="Tell us about yourself..."></textarea>
-                        <input type="file" id="profilePicInput" accept="image/*" disabled style="display:none;width:100%;margin-top:8px;color:inherit;" onchange="previewAvatar(this,'profilePicImg')">
                     </div>
 
                     <div class="detail-card">

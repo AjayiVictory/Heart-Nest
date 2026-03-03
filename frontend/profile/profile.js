@@ -57,7 +57,16 @@ async function loadProfile() {
         if (picEl && data.profilePic) picEl.src = data.profilePic;
 
         const picInput = document.getElementById('profilePicInput');
-        if (picInput && isOwnProfile) picInput.value = data.profilePic || '';
+        if (picInput && isOwnProfile) {
+            picInput.disabled = false;
+            const picLabel = document.getElementById('profilePicLabel');
+            if (picLabel) {
+                picLabel.style.cursor = 'pointer';
+                picLabel.title = 'Click to change your profile picture';
+            }
+            const cameraIcon = document.getElementById('profilePicCameraIcon');
+            if (cameraIcon) cameraIcon.style.display = 'flex';
+        }
 
         document.getElementById('postCount').textContent = data.postsCount || 0;
         document.getElementById('followerCount').textContent = data.followersCount || 0;
@@ -99,59 +108,45 @@ function saveSettings() {
     localStorage.setItem('communityUpdates', document.getElementById('matchAlerts').checked);
 }
 
-function previewAvatar(input, previewId) {
+async function uploadAvatarImmediate(input, previewId) {
     const file = input.files[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.onload = e => {
         const el = document.getElementById(previewId);
         if (el) el.src = e.target.result;
     };
     reader.readAsDataURL(file);
+
+    try {
+        const formData = new FormData();
+        formData.append('avatar', file);
+        const res = await fetch(`${API}/api/users/me/avatar`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+            body: formData
+        });
+        if (!res.ok) alert('Upload failed. Please try again.');
+    } catch (err) {
+        console.error(err);
+        alert('Upload failed. Please try again.');
+    }
 }
 
 async function toggleEdit() {
     const bioInput = document.getElementById('bioInput');
-    const picInput = document.getElementById('profilePicInput');
     const btn = document.querySelector('.btn-edit[onclick="toggleEdit()"]');
 
     if (bioInput.readOnly) {
         bioInput.readOnly = false;
         bioInput.focus();
-        if (picInput) {
-            picInput.disabled = false;
-            picInput.style.display = 'block';
-        }
         if (btn) {
             btn.textContent = 'Save Profile';
             btn.style.background = 'rgba(100, 200, 100, 0.3)';
         }
     } else {
         const bio = bioInput.value.trim();
-
-        // Upload avatar if a file was selected
-        if (picInput && picInput.files[0]) {
-            try {
-                const formData = new FormData();
-                formData.append('avatar', picInput.files[0]);
-                const token = localStorage.getItem('token');
-                const uploadRes = await fetch(`${API}/api/users/me/avatar`, {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token },
-                    body: formData
-                });
-                if (uploadRes.ok) {
-                    const uploadData = await uploadRes.json();
-                    const picEl = document.getElementById('profilePicImg');
-                    if (picEl) picEl.src = uploadData.profilePic;
-                } else {
-                    alert('Profile picture upload failed. Saving other changes.');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Profile picture upload failed. Saving other changes.');
-            }
-        }
 
         try {
             const res = await fetch(`${API}/api/users/me`, {
@@ -171,10 +166,6 @@ async function toggleEdit() {
         }
 
         bioInput.readOnly = true;
-        if (picInput) {
-            picInput.disabled = true;
-            picInput.style.display = 'none';
-        }
         if (btn) {
             btn.textContent = 'Edit Profile';
             btn.style.background = 'rgba(255, 255, 255, 0.25)';

@@ -51,7 +51,11 @@
             <div class="left-column">
                 <div class="profile-card">
                     <div class="profile-header">
-                        <img src="https://via.placeholder.com/80" alt="Profile" class="profile-avatar" id="dashProfilePic">
+                        <label for="avatarUploadDash" style="cursor:pointer;position:relative;display:inline-block;" title="Click to change your profile picture">
+                            <img src="https://via.placeholder.com/80" alt="Profile" class="profile-avatar" id="dashProfilePic" style="display:block;">
+                            <span style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,0.55);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:13px;pointer-events:none;">📷</span>
+                            <input type="file" id="avatarUploadDash" accept="image/*" style="display:none" onchange="uploadAvatarImmediate(this,'dashProfilePic')">
+                        </label>
                         <div class="profile-info">
                             <h2 id="userName">Sarah Mitchell</h2>
                             <p class="profile-bio">
@@ -136,11 +140,7 @@
                 <textarea id="editBio" rows="4" placeholder="Tell us about yourself..."></textarea>
             </div>
             <div class="form-group">
-                <label>Profile Picture</label>
-                <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
-                    <img id="editProfilePicPreview" src="https://via.placeholder.com/60" alt="Preview" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.3);">
-                    <input type="file" id="editProfilePic" accept="image/*" style="flex:1;color:inherit;" onchange="previewAvatar(this,'editProfilePicPreview')">
-                </div>
+                <p style="opacity:0.7;font-size:0.85em;margin:0;">To change your profile picture, click the photo on your dashboard.</p>
             </div>
             <div class="form-group">
                 <label>Interests (comma separated)</label>
