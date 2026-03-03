@@ -1,7 +1,7 @@
-function togglePassword() {
-    const input = document.getElementById('password');
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
     const button = input.parentElement.querySelector('.toggle-password');
-    
+
     if (input.type === 'password') {
         input.type = 'text';
         button.querySelector('.eye-icon').textContent = '👁️‍🗨️';
@@ -15,13 +15,19 @@ function validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function checkEmail() {
+function checkEmailValidity() {
     const emailInput = document.getElementById('email');
-    if (emailInput.value && !validateEmail(emailInput.value)) {
-        emailInput.style.borderColor = 'rgba(255, 100, 100, 0.8)';
-    } else {
-        emailInput.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-    }
+    emailInput.style.borderColor = (emailInput.value && !validateEmail(emailInput.value)) 
+        ? 'rgba(255, 100, 100, 0.8)'
+        : 'rgba(255, 255, 255, 0.3)';
+}
+
+function checkPasswordMatch() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword');
+    confirmPassword.style.borderColor = (confirmPassword.value && confirmPassword.value !== password) 
+        ? 'rgba(255, 100, 100, 0.8)' 
+        : 'rgba(255, 255, 255, 0.3)';
 }
 
 function saveEmail() {
@@ -43,69 +49,62 @@ function loadSavedEmail() {
     }
 }
 
-async function handleSignup(e) {
-    e.preventDefault(); // prevent page reload
-
+async function handleSignUp(e) {
+    e.preventDefault();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const termsAccepted = document.getElementById('terms').checked;
 
-    if (!email || !password) {
+    if (!email || !password || !confirmPassword) {
         alert('Please fill in all fields');
         return;
     }
-
+    if (!termsAccepted) {
+        alert('Please accept the Terms and Conditions');
+        return;
+    }
     if (!validateEmail(email)) {
         alert('Please enter a valid email address');
         return;
     }
-
-    saveEmail();
+    if (password.length < 8) {
+        alert('Password must be at least 8 characters long');
+        return;
+    }
+    if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+    }
 
     try {
-        const response = await fetch('https://heart-nest.onrender.com/api/auth/signup', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-});
+        const res = await fetch('https://heart-nest.onrender.com/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
 
+        const data = await res.json();
 
-        const data = await response.json();
-
-        if (response.ok) {
-            alert(data.message);
-            localStorage.setItem('currentUser', data.username);
-            window.location.href = '../Dashboard/dashboard.html';
-        } else {
+        if (!res.ok) {
             alert(data.message || 'Signup failed');
+            return;
         }
+
+        alert(data.message || 'Signup successful!');
+        setTimeout(() => {
+            window.location.href = '../SignIn/signin.html';
+        }, 1500);
+
     } catch (err) {
         console.error(err);
-        alert('Server error. Check console.');
+        alert('Server error. Please try again later.');
     }
 }
 
-
-function handleGoogleLogin() {
-    console.log('Initiating Google login...');
-    window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth';
-}
-
-function handleAppleLogin() {
-    console.log('Apple login coming soon');
-    alert('Apple login will be available soon');
-}
-
-document.getElementById('signupForm').addEventListener('submit', handleSignup);
-document.getElementById('email').addEventListener('blur', checkEmail);
-
-document.querySelectorAll('.btn-social').forEach(button => {
-    button.addEventListener('click', function() {
-        if (this.textContent.includes('Google')) {
-            handleGoogleLogin();
-        } else {
-            handleAppleLogin();
-        }
-    });
-});
-
+// --- Event Listeners ---
+document.getElementById('signupForm').addEventListener('submit', handleSignUp);
+document.getElementById('email').addEventListener('blur', checkEmailValidity);
+document.getElementById('confirmPassword').addEventListener('input', checkPasswordMatch);
+document.getElementById('remember').addEventListener('change', saveEmail);
 window.addEventListener('load', loadSavedEmail);
