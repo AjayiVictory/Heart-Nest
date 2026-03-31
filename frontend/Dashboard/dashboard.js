@@ -85,11 +85,28 @@ function buildPostHTML(post) {
     const deleteBtn = isOwn
         ? `<button class="post-action-btn" onclick="deletePost('${post._id}')"><span>🗑️</span></button>`
         : '';
+    
+    const isLiked = (post.likes || []).includes(currentUserId);
+    const likeCount = (post.likes || []).length;
+    const likeBtn = `<button class="post-action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${post._id}')">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="${isLiked ? '#DC2626' : 'none'}" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 17.5C10 17.5 2.5 12.5 2.5 7.5C2.5 5.429 4.179 3.75 6.25 3.75C7.75 3.75 9.0625 4.5 10 5.625C10.9375 4.5 12.25 3.75 13.75 3.75C15.821 3.75 17.5 5.429 17.5 7.5C17.5 12.5 10 17.5 10 17.5Z" stroke="${isLiked ? '#DC2626' : '#6B7280'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span id="like-count-${post._id}">${likeCount}</span>
+    </button>`;
+    
     const commentsHtml = (post.comments || []).map(c => {
         const isOwnComment = c.author._id === currentUserId;
+        const commentAvatar = c.author.profilePic
+            ? `<img src="${c.author.profilePic}" alt="${c.author.username}" class="comment-avatar">`
+            : `<div class="comment-avatar">${c.author.username[0].toUpperCase()}</div>`;
         return `<div class="comment-item" id="comment-${c._id}">
-            <strong>${c.author.username}:</strong> ${c.content}
-            ${isOwnComment ? `<button onclick="deleteComment('${post._id}','${c._id}')">✕</button>` : ''}
+            ${commentAvatar}
+            <div class="comment-content">
+                <strong>${c.author.username}</strong>
+                <p>${c.content}</p>
+            </div>
+            ${isOwnComment ? `<button class="delete-comment-btn" onclick="deleteComment('${post._id}','${c._id}')">✕</button>` : ''}
         </div>`;
     }).join('');
 
@@ -105,12 +122,12 @@ function buildPostHTML(post) {
             </div>
             <p class="post-content">${post.content}</p>
             <div class="post-actions">
-                <button class="post-action-btn" onclick="toggleLike('${post._id}', this)">
-                    <span>👍</span>
-                    <span id="likeCount-${post._id}">${post.likes.length}</span>
-                </button>
+                ${likeBtn}
                 <button class="post-action-btn" onclick="toggleComments('${post._id}')">
-                    <span>💬</span>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.5 8.75H14.375L15.625 3.125L10 10.625H12.5L11.25 16.875L17.5 8.75Z" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.25 7.5H2.5V16.25H6.25V7.5Z" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                     <span>${post.comments.length}</span>
                 </button>
             </div>
@@ -151,7 +168,7 @@ async function loadPostsFromAPI(tabType) {
     }
 }
 
-async function toggleLike(postId, btn) {
+async function toggleLike(postId) {
     try {
         const res = await fetch(`${API}/api/posts/${postId}/like`, {
             method: 'PUT',
@@ -159,9 +176,25 @@ async function toggleLike(postId, btn) {
         });
         if (!res.ok) return;
         const data = await res.json();
-        const countEl = document.getElementById(`likeCount-${postId}`);
+        const countEl = document.getElementById(`like-count-${postId}`);
         if (countEl) countEl.textContent = data.likeCount;
-        if (btn) btn.classList.toggle('liked', data.liked);
+        
+        // Update the like button appearance
+        const postCard = document.getElementById(`post-${postId}`);
+        if (postCard) {
+            const likeBtn = postCard.querySelector('.post-action-btn.liked, .post-action-btn:not(.liked)');
+            if (likeBtn) {
+                if (data.liked) {
+                    likeBtn.classList.add('liked');
+                    likeBtn.querySelector('svg path').setAttribute('fill', '#DC2626');
+                    likeBtn.querySelector('svg path').setAttribute('stroke', '#DC2626');
+                } else {
+                    likeBtn.classList.remove('liked');
+                    likeBtn.querySelector('svg path').setAttribute('fill', 'none');
+                    likeBtn.querySelector('svg path').setAttribute('stroke', '#6B7280');
+                }
+            }
+        }
     } catch (err) {
         console.error(err);
     }
@@ -189,14 +222,30 @@ async function addComment(postId) {
         const list = document.querySelector(`#comments-${postId} .comments-list`);
         if (list) {
             const isOwnComment = comment.author._id === currentUserId;
+            const commentAvatar = comment.author.profilePic
+                ? `<img src="${comment.author.profilePic}" alt="${comment.author.username}" class="comment-avatar">`
+                : `<div class="comment-avatar">${comment.author.username[0].toUpperCase()}</div>`;
             const div = document.createElement('div');
             div.className = 'comment-item';
             div.id = `comment-${comment._id}`;
-            div.innerHTML = `<strong>${comment.author.username}:</strong> ${comment.content}
-                ${isOwnComment ? `<button onclick="deleteComment('${postId}','${comment._id}')">✕</button>` : ''}`;
+            div.innerHTML = `${commentAvatar}
+                <div class="comment-content">
+                    <strong>${comment.author.username}</strong>
+                    <p>${comment.content}</p>
+                </div>
+                ${isOwnComment ? `<button class="delete-comment-btn" onclick="deleteComment('${postId}','${comment._id}')">✕</button>` : ''}`;
             list.appendChild(div);
         }
         input.value = '';
+        
+        // Update comment count
+        const postCard = document.getElementById(`post-${postId}`);
+        if (postCard) {
+            const commentCountSpan = postCard.querySelector('.post-actions button:nth-child(2) span:last-child');
+            if (commentCountSpan) {
+                commentCountSpan.textContent = parseInt(commentCountSpan.textContent) + 1;
+            }
+        }
     } catch (err) {
         console.error(err);
     }
@@ -355,10 +404,24 @@ async function uploadAvatarImmediate(input, previewId) {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
             body: formData
         });
-        if (!res.ok) alert('Upload failed. Please try again.');
+        
+        if (res.ok) {
+            const data = await res.json();
+            // Update profile pic URL everywhere on the page
+            const profilePic = data.profilePic;
+            document.querySelectorAll('[id="dashProfilePic"], [id="profilePicImg"]').forEach(el => {
+                if (el) el.src = profilePic;
+            });
+            // Store in localStorage for persistence
+            localStorage.setItem('userProfilePic', profilePic);
+            alert('✓ Profile picture updated successfully!');
+        } else {
+            const error = await res.json();
+            alert('Upload failed: ' + (error.message || 'Please try again.'));
+        }
     } catch (err) {
         console.error(err);
-        alert('Upload failed. Please try again.');
+        alert('Upload failed: Network error. Please check your connection.');
     }
 }
 

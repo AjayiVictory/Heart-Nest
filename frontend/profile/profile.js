@@ -127,10 +127,24 @@ async function uploadAvatarImmediate(input, previewId) {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
             body: formData
         });
-        if (!res.ok) alert('Upload failed. Please try again.');
+        
+        if (res.ok) {
+            const data = await res.json();
+            // Update profile pic URL everywhere on the page
+            const profilePic = data.profilePic;
+            document.querySelectorAll('[id="dashProfilePic"], [id="profilePicImg"]').forEach(el => {
+                if (el) el.src = profilePic;
+            });
+            // Store in localStorage for persistence
+            localStorage.setItem('userProfilePic', profilePic);
+            alert('✓ Profile picture updated successfully!');
+        } else {
+            const error = await res.json();
+            alert('Upload failed: ' + (error.message || 'Please try again.'));
+        }
     } catch (err) {
         console.error(err);
-        alert('Upload failed. Please try again.');
+        alert('Upload failed: Network error. Please check your connection.');
     }
 }
 

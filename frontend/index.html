@@ -1,78 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HeartNest</title>
+    <title>HeartNest - Connect, Share, and Grow Together</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M16 28C16 28 4 20 4 12C4 8.686 6.686 6 10 6C12.4 6 14.5 7.2 16 9C17.5 7.2 19.6 6 22 6C25.314 6 28 8.686 28 12C28 20 16 28 16 28Z"
+                            fill="#0066CC" />
+                    </svg>
+                    <span class="logo-text">HeartNest</span>
+                </div>
+                <nav class="nav">
+                    <a href="#features">Features</a>
+                    <a href="#about">About</a>
+                    <a href="#community">Community</a>
+                    <a href="SignIn/signin.html" class="nav-link">Sign In</a>
+                    <a href="SignUp/signup.html" class="btn btn-primary">Get Started</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
     <section class="hero">
         <div class="container">
-            <h1 class="hero-title">Welcome to<br>HeartNest</h1>
-            <div class="hero-subtitle">
-                <h2>Where every connection feels like home 🏡💖</h2> <br>
+            <div class="hero-content">
+                <h1 class="hero-title">Build Meaningful Connections</h1>
+                <p class="hero-subtitle">A professional community platform where authentic voices thrive. Share your
+                    journey, engage with like-minded individuals, and grow together.</p>
                 <div class="hero-buttons">
-                    <a href="SignUp/signup.html" class="btn btn-primary">Sign Up</a>
-                    <a href="SignIn/signin.html" class="btn btn-secondary">Sign In</a>
+                    <a href="SignUp/signup.html" class="btn btn-primary btn-large">Create Account</a>
+                    <a href="#features" class="btn btn-secondary btn-large">Learn More</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">10K+</div>
+                        <div class="stat-label">Active Members</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">50K+</div>
+                        <div class="stat-label">Stories Shared</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">100K+</div>
+                        <div class="stat-label">Connections Made</div>
+                    </div>
                 </div>
             </div>
-            <p class="tagline"> Connect, share, and grow 🌱</p>
         </div>
     </section>
-    <section class="features">
+
+    <section class="features" id="features">
         <div class="container">
+            <div class="section-header">
+                <h2>Why Choose HeartNest</h2>
+                <p>Powerful features designed to enhance your community experience</p>
+            </div>
             <div class="feature-cards">
                 <div class="feature-card">
-                    <div class="feature-icon">💖</div>
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="48" height="48" rx="12" fill="#E6F0FF" />
+                            <path
+                                d="M24 32V24M24 16H24.02M40 24C40 32.8366 32.8366 40 24 40C15.1634 40 8 32.8366 8 24C8 15.1634 15.1634 8 24 8C32.8366 8 40 15.1634 40 24Z"
+                                stroke="#0066CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
                     <h3>Share Your Story</h3>
-                    <p>Express yourself freely and share your unique journey with the world. Every story, every thought, every moment you share has the power to inspire, uplift, and connect with others who truly understand and appreciate you.</p>
+                    <p>Express yourself authentically and share your unique journey. Connect with others through
+                        meaningful content and build your personal narrative.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🌟</div>
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="48" height="48" rx="12" fill="#E6F0FF" />
+                            <path
+                                d="M34 38V34C34 31.8783 33.1571 29.8434 31.6569 28.3431C30.1566 26.8429 28.1217 26 26 26H14C11.8783 26 9.84344 26.8429 8.34315 28.3431C6.84286 29.8434 6 31.8783 6 34V38M42 38V34C41.9987 32.2275 41.3456 30.5128 40.1617 29.1681C38.9778 27.8234 37.3481 26.9396 35.58 26.68M30.58 10.68C32.3523 10.9373 33.9864 11.8209 35.1737 13.1669C36.3611 14.5129 37.0155 16.2309 37.0155 18.005C37.0155 19.7791 36.3611 21.4971 35.1737 22.8431C33.9864 24.1891 32.3523 25.0727 30.58 25.33M26 18C26 22.4183 22.4183 26 18 26C13.5817 26 10 22.4183 10 18C10 13.5817 13.5817 10 18 10C22.4183 10 26 13.5817 26 18Z"
+                                stroke="#0066CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
                     <h3>Grow Together</h3>
-                    <p>Learn from the experiences of others, share your own insights and stories, and uplift one another in a welcoming, positive space where every voice is valued and every connection matters.</p>
+                    <p>Learn from diverse perspectives and experiences. Engage in meaningful discussions that inspire
+                        personal and professional growth.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">✨</div>
-                    <h3>Your Space, Your Pace</h3>
-                    <p>Your space, your pace, explore, connect, or simply observe in a community designed to respect your comfort. Take your time, engage when you’re ready, and enjoy a safe, welcoming environment that moves with you.</p>
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="48" height="48" rx="12" fill="#E6F0FF" />
+                            <path
+                                d="M38 20C38 32 24 42 24 42C24 42 10 32 10 20C10 16.8174 11.2643 13.7652 13.5147 11.5147C15.7652 9.26428 18.8174 8 22 8C24.652 8 27.196 9.104 29 11C30.804 9.104 33.348 8 36 8C39.1826 8 42.2348 9.26428 44.4853 11.5147C46.7357 13.7652 48 16.8174 48 20H38Z"
+                                stroke="#0066CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <h3>Your Safe Space</h3>
+                    <p>Engage at your own pace in a respectful, moderated environment. We prioritize your privacy,
+                        security, and wellbeing.</p>
                 </div>
             </div>
         </div>
     </section>
-    <section class="about">
+
+    <section class="about" id="about">
         <div class="container">
             <div class="about-content">
                 <div class="about-text">
-                    <h2>About HeartNest</h2>
-                    <p>HeartNest is a cozy, welcoming space where connections go beyond the surface. Here, you can share your stories, explore new ideas, and engage with people who truly understand and value you. Our mission is to create a safe, positive, and inspiring community where every voice matters and every heart finds a place to belong.</p>
+                    <span class="section-badge">About HeartNest</span>
+                    <h2>Where Authentic Connections Flourish</h2>
+                    <p>HeartNest is a professional community platform designed for meaningful engagement. We've created
+                        an environment where thoughtful conversations, shared experiences, and genuine connections take
+                        center stage.</p>
+                    <p>Our mission is to foster a supportive ecosystem where every member can share their story, learn
+                        from others, and build lasting relationships based on mutual respect and understanding.</p>
                     <ul class="about-features">
-                        <li>✓ Share Your Story</li>
-                        <li>✓ Grow Together</li>
-                        <li>✓ Your Space, Your Pace</li>
-                        <li>✓ Discover & Explore</li>
+                        <li>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="#0066CC" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            <span>Professional networking and community building</span>
+                        </li>
+                        <li>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="#0066CC" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            <span>Collaborative learning and knowledge sharing</span>
+                        </li>
+                        <li>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="#0066CC" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            <span>Privacy-focused platform with robust moderation</span>
+                        </li>
+                        <li>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="#0066CC" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            <span>Customizable experience tailored to your interests</span>
+                        </li>
                     </ul>
                 </div>
                 <div class="about-image">
-                    <div class="image-placeholder"></div>
+                    <div class="image-placeholder">
+                        <svg width="400" height="300" viewBox="0 0 400 300" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <rect width="400" height="300" rx="12" fill="#F7F9FC" />
+                            <circle cx="200" cy="120" r="40" fill="#E6F0FF" />
+                            <circle cx="150" cy="180" r="30" fill="#CCE0FF" />
+                            <circle cx="250" cy="180" r="30" fill="#CCE0FF" />
+                            <path d="M200 150 C200 150, 170 170, 150 180" stroke="#0066CC" stroke-width="2" />
+                            <path d="M200 150 C200 150, 230 170, 250 180" stroke="#0066CC" stroke-width="2" />
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
-    <section class="cta">
+
+    <section class="cta" id="community">
         <div class="container">
-            <h2>Join HeartNest Today 💛</h2>
-            <div class="cta-buttons">
-                <a href="signup/signup.html" class="btn btn-primary">Get Started</a>
-                <a href="#" class="btn btn-secondary">Learn More</a>
+            <div class="cta-content">
+                <h2>Ready to Join Our Community?</h2>
+                <p>Start building meaningful connections today. Create your account in minutes and become part of
+                    something special.</p>
+                <div class="cta-buttons">
+                    <a href="SignUp/signup.html" class="btn btn-primary btn-large">Create Your Account</a>
+                    <a href="SignIn/signin.html" class="btn btn-secondary btn-large">Sign In</a>
+                </div>
             </div>
         </div>
     </section>
+
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 HeartNest</p>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M16 28C16 28 4 20 4 12C4 8.686 6.686 6 10 6C12.4 6 14.5 7.2 16 9C17.5 7.2 19.6 6 22 6C25.314 6 28 8.686 28 12C28 20 16 28 16 28Z"
+                                fill="#0066CC" />
+                        </svg>
+                        <span>HeartNest</span>
+                    </div>
+                    <p class="footer-tagline">Building meaningful connections, one story at a time.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#about">About</a>
+                        <a href="#community">Community</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="#">About Us</a>
+                        <a href="#">Careers</a>
+                        <a href="#">Blog</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Support</h4>
+                        <a href="#">Help Center</a>
+                        <a href="#">Privacy Policy</a>
+                        <a href="#">Terms of Service</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 HeartNest. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 </body>
+
 </html>

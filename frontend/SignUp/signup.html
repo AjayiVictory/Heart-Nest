@@ -3,99 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join HeartNest - Sign Up</title>
+    <title>Sign Up - HeartNest</title>
     <link rel="stylesheet" href="signup.css">
 </head>
 <body>
     <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <span class="logo-icon">💖</span>
-                <span class="logo-text">HeartNest</span>
+        <div class="container">
+            <div class="header-content">
+                <a href="../index.html" class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 28C16 28 4 20 4 12C4 8.686 6.686 6 10 6C12.4 6 14.5 7.2 16 9C17.5 7.2 19.6 6 22 6C25.314 6 28 8.686 28 12C28 20 16 28 16 28Z" fill="#0066CC"/>
+                    </svg>
+                    <span class="logo-text">HeartNest</span>
+                </a>
+                <nav class="nav">
+                    <a href="../index.html">Home</a>
+                    <a href="../SignIn/signin.html" class="btn btn-primary">Sign In</a>
+                </nav>
             </div>
-            <nav class="nav">
-                <a href="#features">Features</a>
-                <a href="#about">About</a>
-                <a href="../SignIn/signin.html" class="btn-nav">Sign In</a>
-            </nav>
         </div>
     </header>
 
     <main class="main-content">
         <div class="container">
-            <div class="info-section">
+            <div class="auth-wrapper">
                 <div class="back-link">
                     <a href="../index.html">
-                        <span>←</span> Return back to our community
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Back to home
                     </a>
                 </div>
-
-                <div class="info-content">
-                    <h1>Join<br><span class="brand-gradient">HeartNest</span></h1>
-                    <p class="info-description">
-                        Create your account and start your journey of emotional growth and
-                        meaningful connections with our supportive community.
-                    </p>
-
-                    <div class="info-features">
-                        <div class="info-feature-item">
-                            <span class="check-icon">✓</span>
-                            <span>Connect with your community</span>
-                        </div>
-                        <div class="info-feature-item">
-                            <span class="check-icon">✓</span>
-                            <span>Continue conversations</span>
-                        </div>
-                        <div class="info-feature-item">
-                            <span class="check-icon">✓</span>
-                            <span>Discover new connections</span>
-                        </div>
+                
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h1>Create Your Account</h1>
+                        <p>Join our community and start connecting today</p>
                     </div>
-                </div>
-            </div>
 
-            <div class="form-section">
-                <div class="form-card">
-                    <h2>Create Account</h2>
-                    <p class="form-subtitle">Join the community today</p>
-
-                    <form id="signupForm" class="signup-form">
+                    <form id="signupForm" class="auth-form">
                         <div class="form-group">
                             <label for="username">Username</label>
-                            <input type="text" id="username" placeholder="Choose a username" required>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                placeholder="Choose a unique username" 
+                                required
+                            >
                         </div>
 
                         <div class="form-group">
                             <label for="email">Email Address</label>
-                            <input type="email" id="email" placeholder="your.email@example.com" required>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                placeholder="name@example.com" 
+                                oninput="checkEmailValidity()"
+                                required
+                            >
                         </div>
 
                         <div class="form-group">
                             <label for="password">Password</label>
-                            <div class="password-input">
-                                <input type="password" id="password" placeholder="Create a password" required>
-                                <button type="button" class="toggle-password" onclick="togglePassword('password')">
-                                    <span class="eye-icon">👁️</span>
+                            <div class="input-with-icon">
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    placeholder="Create a strong password" 
+                                    oninput="validatePasswordMatch()"
+                                    required
+                                >
+                                <button type="button" class="icon-button" onclick="togglePassword('password')">
+                                    <svg class="eye-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M10 4C4.5 4 1 10 1 10s3.5 6 9 6 9-6 9-6-3.5-6-9-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/>
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="confirmPassword">Confirm Password</label>
-                            <div class="password-input">
-                                <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
-                                <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">
-                                    <span class="eye-icon">👁️</span>
+                            <div class="input-with-icon">
+                                <input 
+                                    type="password" 
+                                    id="confirmPassword" 
+                                    placeholder="Re-enter your password" 
+                                    oninput="validatePasswordMatch()"
+                                    required
+                                >
+                                <button type="button" class="icon-button" onclick="togglePassword('confirmPassword')">
+                                    <svg class="eye-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M10 4C4.5 4 1 10 1 10s3.5 6 9 6 9-6 9-6-3.5-6-9-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/>
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
                         <div class="checkbox-group">
                             <input type="checkbox" id="terms" required>
-                            <label for="terms">I agree to the Terms and Conditions</label>
+                            <label for="terms">
+                                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                            </label>
                         </div>
 
-                        <button type="submit" class="btn-submit">Create Account</button>
+                        <button type="submit" class="btn btn-primary btn-large">Create Account</button>
 
                         <div class="divider">
                             <span>Or continue with</span>
@@ -103,62 +117,34 @@
 
                         <div class="social-buttons">
                             <button type="button" class="btn-social">
-                                <span class="social-icon">G</span>
-                                Google
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M18 10.2c0-5-4-8.2-8-8.2-4.4 0-8 3.6-8 8s3.6 8 8 8c3.5 0 6.5-2.3 7.5-5.5h-7.5v-2.3h9.8c.1.3.2.7.2 1" fill="#4285F4"/>
+                                </svg>
+                                <span>Google</span>
                             </button>
                             <button type="button" class="btn-social">
-                                <span class="social-icon">🍎</span>
-                                Apple
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17.5 10c0 3.8-2.8 6.9-6.5 7.4v-5.2h1.8l.3-2.2h-2.1V8.7c0-.6.3-1.2 1.3-1.2h1V5.7s-.9-.2-1.8-.2c-1.8 0-3 1.1-3 3.1v1.8h-2v2.2h2v5.2C5.3 16.9 2.5 13.8 2.5 10c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5z" fill="#1877F2"/>
+                                </svg>
+                                <span>Facebook</span>
                             </button>
                         </div>
 
-                        <p class="signin-link">
-                            Already have an account? <a href="../SignIn/signin.html">Sign In</a>
+                        <p class="form-switch">
+                            Already have an account? 
+                            <a href="../SignIn/signin.html">Sign in</a>
                         </p>
                     </form>
                 </div>
-            </div>
-        </div>
 
-        <div class="feature-cards-section">
-            <div class="feature-card-mini">
-    <div class="feature-card-icon">🏡</div>
-    <h3>Heart-Safe Space</h3>
-    <p>A nurturing space for honest and meaningful connection</p>
-</div>
-
-            <div class="feature-card-mini">
-                <div class="feature-card-icon">🔒</div>
-                <h3>Privacy Protection</h3>
-                <p>Your data stays secure</p>
-            </div>
-            <div class="feature-card-mini">
-                <div class="feature-card-icon">✅</div>
-                <h3>24/7 Support</h3>
-                <p>Always here to help</p>
-            </div>
-            <div class="feature-card-mini">
-                <div class="feature-card-icon">⭐</div>
-                <h3>User Moderation</h3>
-                <p>Safe community standards</p>
+                <p class="terms-notice">
+                    By creating an account, you agree to our 
+                    <a href="#">Terms of Service</a> and 
+                    <a href="#">Privacy Policy</a>
+                </p>
             </div>
         </div>
     </main>
-
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-left">
-                <span class="logo-icon">💖</span>
-                <span>HeartNest</span>
-            </div>
-            <div class="footer-links">
-                <a href="#">Privacy</a>
-                <a href="#">Terms</a>
-                <a href="#">Support</a>
-            </div>
-        </div>
-        <p class="copyright">© 2025 HeartNest. All rights reserved. Designed with ❤️ for meaningful connections</p>
-    </footer>
 
     <script src="signup.js"></script>
 </body>

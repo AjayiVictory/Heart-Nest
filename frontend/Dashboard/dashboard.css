@@ -6,20 +6,20 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+    background: #F7F9FC;
     min-height: 100vh;
-    color: #ffffff;
+    color: #1A1A1A;
     line-height: 1.6;
 }
 
 .header {
     padding: 15px 0;
-    background: rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(15px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: #FFFFFF;
+    border-bottom: 1px solid #E5E7EB;
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .header-content {
@@ -39,6 +39,7 @@ body {
     font-size: 1.5rem;
     font-weight: 700;
     flex-shrink: 0;
+    color: #0066CC;
 }
 
 .logo-icon {
@@ -54,23 +55,23 @@ body {
 .search-input {
     width: 100%;
     padding: 10px 40px 10px 15px;
-    border-radius: 25px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+    background: #F7F9FC;
+    color: #1A1A1A;
     font-size: 0.95rem;
     outline: none;
     transition: all 0.3s ease;
 }
 
 .search-input::placeholder {
-    color: rgba(255, 255, 255, 0.6);
+    color: #9CA3AF;
 }
 
 .search-input:focus {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: #FFFFFF;
+    border-color: #0066CC;
+    box-shadow: 0 0 0 3px #E6F0FF;
 }
 
 .search-icon {
@@ -168,23 +169,26 @@ body {
     align-items: center;
     gap: 6px;
     padding: 8px 12px;
-    border-radius: 20px;
+    border-radius: 8px;
     text-decoration: none;
-    color: #ffffff;
+    color: #6B7280;
     transition: all 0.3s ease;
     background: transparent;
     border: 1px solid transparent;
     white-space: nowrap;
     flex-shrink: 0;
+    font-weight: 500;
 }
 
 .nav-item:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #F7F9FC;
+    color: #0066CC;
 }
 
 .nav-item.active {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: #E6F0FF;
+    color: #0066CC;
+    border: 1px solid #CCE0FF;
 }
 
 .nav-icon {
@@ -193,9 +197,9 @@ body {
 
 .btn-notification {
     position: relative;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
+    background: #F7F9FC;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
     width: 38px;
     height: 38px;
     display: flex;
@@ -209,7 +213,7 @@ body {
 }
 
 .btn-notification:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: #E5E7EB;
 }
 
 .btn-logout {
@@ -217,10 +221,10 @@ body {
     align-items: center;
     gap: 6px;
     padding: 8px 12px;
-    border-radius: 20px;
-    background: rgba(255, 100, 100, 0.3);
-    border: 1px solid rgba(255, 100, 100, 0.4);
-    color: #ffffff;
+    border-radius: 8px;
+    background: #FEE2E2;
+    border: 1px solid #FCA5A5;
+    color: #DC2626;
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: 500;
@@ -229,14 +233,14 @@ body {
 }
 
 .btn-logout:hover {
-    background: rgba(255, 100, 100, 0.4);
+    background: #FECACA;
 }
 
 .notification-badge {
     position: absolute;
     top: -5px;
     right: -5px;
-    background: #ff4757;
+    background: #DC2626;
     color: #ffffff;
     font-size: 0.7rem;
     font-weight: 700;
@@ -246,7 +250,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #667eea;
+    border: 2px solid #FFFFFF;
 }
 
 .main-content {
@@ -267,11 +271,11 @@ body {
 }
 
 .profile-card {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
+    background: #FFFFFF;
+    border-radius: 16px;
     padding: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .profile-header {
@@ -331,11 +335,11 @@ body {
 }
 
 .btn-edit-profile {
-    background: rgba(255, 255, 255, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: #0066CC;
+    border: 1px solid #0066CC;
     color: #ffffff;
     padding: 10px 20px;
-    border-radius: 20px;
+    border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -343,7 +347,7 @@ body {
 }
 
 .btn-edit-profile:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: #0052A3;
 }
 
 .feed-tabs {
@@ -527,6 +531,127 @@ body {
 
 .post-action-btn.saved:hover {
     background: rgba(100, 200, 255, 0.4);
+}
+
+/* Comments Section */
+.comments-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.comment-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    position: relative;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.comment-avatar:not(img) {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.comment-content {
+    flex: 1;
+}
+
+.comment-content strong {
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.comment-content p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.delete-comment-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 100, 100, 0.3);
+    border: none;
+    color: #ffffff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.delete-comment-btn:hover {
+    background: rgba(255, 100, 100, 0.5);
+}
+
+.comment-input {
+    display: flex;
+    gap: 10px;
+}
+
+.comment-input input {
+    flex: 1;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.comment-input input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.comment-input input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.comment-input button {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.comment-input button:hover {
+    background: rgba(255, 255, 255, 0.35);
 }
 
 .right-column {
