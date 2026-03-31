@@ -34,11 +34,46 @@ router.get('/me', auth, async (req, res) => {
     }
 });
 
-// PUT /api/users/me — update own bio and profilePic
+// PUT /api/users/me — update own profile fields
 router.put('/me', auth, async (req, res) => {
     try {
-        const { bio, profilePic } = req.body;
+        const { username, email, bio, profilePic } = req.body;
         const updates = {};
+
+        if (username !== undefined) {
+            const trimmedUsername = String(username).trim();
+            if (!trimmedUsername) {
+                return res.status(400).json({ message: 'Username cannot be empty' });
+            }
+
+            const existingUsername = await User.findOne({
+                username: trimmedUsername,
+                _id: { $ne: req.user.userId }
+            });
+            if (existingUsername) {
+                return res.status(400).json({ message: 'Username already taken' });
+            }
+
+            updates.username = trimmedUsername;
+        }
+
+        if (email !== undefined) {
+            const trimmedEmail = String(email).trim().toLowerCase();
+            if (!trimmedEmail) {
+                return res.status(400).json({ message: 'Email cannot be empty' });
+            }
+
+            const existingEmail = await User.findOne({
+                email: trimmedEmail,
+                _id: { $ne: req.user.userId }
+            });
+            if (existingEmail) {
+                return res.status(400).json({ message: 'Email already in use' });
+            }
+
+            updates.email = trimmedEmail;
+        }
+
         if (bio !== undefined) updates.bio = bio;
         if (profilePic !== undefined) updates.profilePic = profilePic;
 

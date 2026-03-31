@@ -3,6 +3,13 @@ const router = express.Router();
 const Post = require('../models/post');
 const auth = require('../middleware/auth');
 
+function emitFeedUpdate(req, payload) {
+    const io = req.app.get('io');
+    if (io) {
+        io.emit('feed:update', payload);
+    }
+}
+
 // POST /api/posts — create a post
 router.post('/', auth, async (req, res) => {
     try {
@@ -18,6 +25,8 @@ router.post('/', auth, async (req, res) => {
         const populated = await Post.findById(post._id)
             .populate('author', 'username profilePic')
             .populate('comments.author', 'username profilePic');
+
+        emitFeedUpdate(req, { type: 'post_created', postId: populated._id.toString() });
 
         res.status(201).json(populated);
     } catch (err) {
@@ -77,6 +86,7 @@ router.delete('/:id', auth, async (req, res) => {
             return res.status(403).json({ message: 'Not authorized' });
         }
         await post.deleteOne();
+        emitFeedUpdate(req, { type: 'post_deleted', postId: req.params.id });
         res.json({ message: 'Post deleted' });
     } catch (err) {
         console.error(err);
@@ -97,6 +107,7 @@ router.put('/:id/like', auth, async (req, res) => {
             post.likes.push(req.user.userId);
         }
         await post.save();
+        emitFeedUpdate(req, { type: 'post_liked', postId: req.params.id });
         res.json({ liked: !alreadyLiked, likeCount: post.likes.length });
     } catch (err) {
         console.error(err);
@@ -120,6 +131,8 @@ router.post('/:id/comments', auth, async (req, res) => {
         const updated = await Post.findById(req.params.id)
             .populate('comments.author', 'username profilePic');
         const newComment = updated.comments[updated.comments.length - 1];
+
+        emitFeedUpdate(req, { type: 'comment_added', postId: req.params.id, commentId: newComment._id.toString() });
         res.status(201).json(newComment);
     } catch (err) {
         console.error(err);
@@ -141,6 +154,7 @@ router.delete('/:id/comments/:commentId', auth, async (req, res) => {
 
         comment.deleteOne();
         await post.save();
+        emitFeedUpdate(req, { type: 'comment_deleted', postId: req.params.id, commentId: req.params.commentId });
         res.json({ message: 'Comment deleted' });
     } catch (err) {
         console.error(err);

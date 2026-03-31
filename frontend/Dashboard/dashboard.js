@@ -1,4 +1,4 @@
-const API = 'https://heart-nest.onrender.com';
+const API = window.APP_CONFIG?.API_BASE_URL || 'https://heart-nest.onrender.com';
 
 function getAuthHeaders() {
     return {
@@ -9,6 +9,14 @@ function getAuthHeaders() {
 
 let currentUser = localStorage.getItem('username') || 'Guest';
 let currentUserId = localStorage.getItem('userId');
+let activeTab = 'posts';
+let refreshIntervalId = null;
+let socket = null;
+let refreshTimeoutId = null;
+
+function isPostLikedByCurrentUser(post) {
+    return (post.likes || []).some(id => String(id) === String(currentUserId));
+}
 
 async function updateDashboardStats() {
     try {
@@ -31,7 +39,11 @@ async function updateDashboardStats() {
         if (connectionCount) connectionCount.textContent = data.followingCount || 0;
 
         const nameEl = document.getElementById('userName');
-        if (nameEl) nameEl.textContent = data.username;
+        if (nameEl) nameEl.textContent = data.username || 'User';
+
+        currentUser = data.username || currentUser;
+        localStorage.setItem('username', currentUser);
+        if (data.email) localStorage.setItem('userEmail', data.email);
 
         const picEl = document.getElementById('dashProfilePic');
         if (picEl && data.profilePic) picEl.src = data.profilePic;
@@ -86,9 +98,9 @@ function buildPostHTML(post) {
         ? `<button class="post-action-btn" onclick="deletePost('${post._id}')"><span>🗑️</span></button>`
         : '';
     
-    const isLiked = (post.likes || []).includes(currentUserId);
+    const isLiked = isPostLikedByCurrentUser(post);
     const likeCount = (post.likes || []).length;
-    const likeBtn = `<button class="post-action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${post._id}')">
+    const likeBtn = `<button id="like-btn-${post._id}" class="post-action-btn like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${post._id}')">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="${isLiked ? '#DC2626' : 'none'}" xmlns="http://www.w3.org/2000/svg">
             <path d="M10 17.5C10 17.5 2.5 12.5 2.5 7.5C2.5 5.429 4.179 3.75 6.25 3.75C7.75 3.75 9.0625 4.5 10 5.625C10.9375 4.5 12.25 3.75 13.75 3.75C15.821 3.75 17.5 5.429 17.5 7.5C17.5 12.5 10 17.5 10 17.5Z" stroke="${isLiked ? '#DC2626' : '#6B7280'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -128,7 +140,7 @@ function buildPostHTML(post) {
                         <path d="M17.5 8.75H14.375L15.625 3.125L10 10.625H12.5L11.25 16.875L17.5 8.75Z" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M6.25 7.5H2.5V16.25H6.25V7.5Z" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span>${post.comments.length}</span>
+                    <span id="comment-count-${post._id}">${post.comments.length}</span>
                 </button>
             </div>
             <div class="comments-section" id="comments-${post._id}" style="display:none">
@@ -180,20 +192,27 @@ async function toggleLike(postId) {
         if (countEl) countEl.textContent = data.likeCount;
         
         // Update the like button appearance
-        const postCard = document.getElementById(`post-${postId}`);
-        if (postCard) {
-            const likeBtn = postCard.querySelector('.post-action-btn.liked, .post-action-btn:not(.liked)');
-            if (likeBtn) {
-                if (data.liked) {
-                    likeBtn.classList.add('liked');
-                    likeBtn.querySelector('svg path').setAttribute('fill', '#DC2626');
-                    likeBtn.querySelector('svg path').setAttribute('stroke', '#DC2626');
-                } else {
-                    likeBtn.classList.remove('liked');
-                    likeBtn.querySelector('svg path').setAttribute('fill', 'none');
-                    likeBtn.querySelector('svg path').setAttribute('stroke', '#6B7280');
+        const likeBtn = document.getElementById(`like-btn-${postId}`);
+        if (likeBtn) {
+            const heartPath = likeBtn.querySelector('svg path');
+            if (data.liked) {
+                likeBtn.classList.add('liked');
+                if (heartPath) {
+                    heartPath.setAttribute('fill', '#DC2626');
+                    heartPath.setAttribute('stroke', '#DC2626');
+                }
+            } else {
+                likeBtn.classList.remove('liked');
+                if (heartPath) {
+                    heartPath.setAttribute('fill', 'none');
+                    heartPath.setAttribute('stroke', '#6B7280');
                 }
             }
+        }
+
+        if (activeTab === 'liked' && !data.liked) {
+            const postCard = document.getElementById(`post-${postId}`);
+            if (postCard) postCard.remove();
         }
     } catch (err) {
         console.error(err);
@@ -239,12 +258,9 @@ async function addComment(postId) {
         input.value = '';
         
         // Update comment count
-        const postCard = document.getElementById(`post-${postId}`);
-        if (postCard) {
-            const commentCountSpan = postCard.querySelector('.post-actions button:nth-child(2) span:last-child');
-            if (commentCountSpan) {
-                commentCountSpan.textContent = parseInt(commentCountSpan.textContent) + 1;
-            }
+        const commentCountSpan = document.getElementById(`comment-count-${postId}`);
+        if (commentCountSpan) {
+            commentCountSpan.textContent = String((parseInt(commentCountSpan.textContent, 10) || 0) + 1);
         }
     } catch (err) {
         console.error(err);
@@ -261,6 +277,12 @@ async function deleteComment(postId, commentId) {
         if (res.ok) {
             const el = document.getElementById(`comment-${commentId}`);
             if (el) el.remove();
+
+            const commentCountSpan = document.getElementById(`comment-count-${postId}`);
+            if (commentCountSpan) {
+                const currentCount = parseInt(commentCountSpan.textContent, 10) || 0;
+                commentCountSpan.textContent = String(Math.max(0, currentCount - 1));
+            }
         }
     } catch (err) {
         console.error(err);
@@ -285,6 +307,7 @@ async function deletePost(postId) {
 }
 
 function switchTab(tabType) {
+    activeTab = tabType;
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(t => t.classList.remove('active'));
     const postCreateBox = document.querySelector('.post-create-box');
@@ -431,6 +454,7 @@ async function openEditProfile() {
         if (res.ok) {
             const data = await res.json();
             document.getElementById('editName').value = data.username || '';
+            document.getElementById('settingsEmail').textContent = data.email || 'Not set';
             document.getElementById('editBio').value = data.bio || '';
         }
     } catch (err) {
@@ -442,20 +466,31 @@ async function openEditProfile() {
 }
 
 async function saveProfile() {
+    const username = document.getElementById('editName').value.trim();
     const bio = document.getElementById('editBio').value.trim();
     const interestsInput = document.getElementById('editInterests').value.trim();
+
+    if (!username) {
+        alert('Name cannot be empty');
+        return;
+    }
 
     try {
         const res = await fetch(`${API}/api/users/me`, {
             method: 'PUT',
             headers: getAuthHeaders(),
-            body: JSON.stringify({ bio })
+            body: JSON.stringify({ username, bio })
         });
         if (!res.ok) {
             const data = await res.json();
             alert(data.message || 'Failed to save profile');
             return;
         }
+
+        const updated = await res.json();
+        currentUser = updated.username || username;
+        localStorage.setItem('username', currentUser);
+        if (updated.email) localStorage.setItem('userEmail', updated.email);
     } catch (err) {
         console.error(err);
         alert('Server error. Please try again.');
@@ -468,6 +503,7 @@ async function saveProfile() {
     closeModal('editProfileModal');
     alert('Profile updated successfully!');
     await updateDashboardStats();
+    if (activeTab) await loadPostsFromAPI(activeTab);
 }
 
 function openNotifications(event) {
@@ -732,12 +768,13 @@ function openChangeEmail() {
 }
 
 function downloadData() {
+    const storedPosts = JSON.parse(localStorage.getItem('allPosts') || '[]');
     const userData = {
         user: currentUser,
         email: localStorage.getItem('userEmail'),
         bio: localStorage.getItem('userBio'),
         interests: JSON.parse(localStorage.getItem('userInterests') || '[]'),
-        posts: allPosts.filter(post => post.user === currentUser),
+        posts: storedPosts.filter(post => post.user === currentUser),
         likedPosts: JSON.parse(localStorage.getItem(`likedPosts_${currentUser}`) || '[]'),
         savedPosts: JSON.parse(localStorage.getItem(`savedPosts_${currentUser}`) || '[]'),
         connections: localStorage.getItem(`connections_${currentUser}`) || 0
@@ -805,8 +842,40 @@ function deleteAccount() {
     }
 }
 
+function startAutoRefresh() {
+    if (refreshIntervalId) clearInterval(refreshIntervalId);
+    refreshIntervalId = setInterval(async () => {
+        if (document.hidden) return;
+        await Promise.all([loadPostsFromAPI(activeTab), updateDashboardStats()]);
+    }, 10000);
+}
+
+function scheduleDashboardRefresh() {
+    if (refreshTimeoutId) clearTimeout(refreshTimeoutId);
+    refreshTimeoutId = setTimeout(async () => {
+        await Promise.all([loadPostsFromAPI(activeTab), updateDashboardStats()]);
+    }, 200);
+}
+
+function setupRealtimeUpdates() {
+    if (typeof io !== 'function') return;
+    if (socket) return;
+
+    socket = io(API, {
+        transports: ['websocket', 'polling']
+    });
+
+    socket.on('feed:update', () => {
+        if (!document.hidden) {
+            scheduleDashboardRefresh();
+        }
+    });
+}
+
 window.onload = function() {
     init();
     applyAppearanceSettings();
     updateNotificationBadge();
+    startAutoRefresh();
+    setupRealtimeUpdates();
 };

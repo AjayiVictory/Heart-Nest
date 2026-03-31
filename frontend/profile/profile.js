@@ -1,4 +1,4 @@
-const API = 'https://heart-nest.onrender.com';
+const API = window.APP_CONFIG?.API_BASE_URL || 'https://heart-nest.onrender.com';
 
 function getAuthHeaders() {
     return {
@@ -9,6 +9,7 @@ function getAuthHeaders() {
 
 const currentUserId = localStorage.getItem('userId');
 let viewedUserId = null;
+let ownProfileView = false;
 
 async function loadProfile() {
     const token = localStorage.getItem('token');
@@ -20,6 +21,7 @@ async function loadProfile() {
     const params = new URLSearchParams(window.location.search);
     const queryUserId = params.get('userId');
     const isOwnProfile = !queryUserId || queryUserId === currentUserId;
+    ownProfileView = isOwnProfile;
     viewedUserId = isOwnProfile ? currentUserId : queryUserId;
 
     const editBtn = document.querySelector('.btn-edit[onclick="toggleEdit()"]');
@@ -36,6 +38,7 @@ async function loadProfile() {
             if (followBtn) followBtn.style.display = 'none';
 
             document.getElementById('profileEmail').textContent = data.email || '';
+            if (data.email) localStorage.setItem('userEmail', data.email);
         } else {
             const res = await fetch(`${API}/api/users/${queryUserId}`, { headers: getAuthHeaders() });
             if (!res.ok) throw new Error('Failed to load profile');
@@ -51,6 +54,7 @@ async function loadProfile() {
         }
 
         document.getElementById('profileName').textContent = data.username || '';
+    if (isOwnProfile && data.username) localStorage.setItem('username', data.username);
         document.getElementById('bioInput').value = data.bio || '';
 
         const picEl = document.getElementById('profilePicImg');
@@ -75,14 +79,20 @@ async function loadProfile() {
         console.error(err);
     }
 
-    loadInterests();
+    loadInterests(isOwnProfile);
     loadSettings();
 }
 
-function loadInterests() {
+function loadInterests(isOwnProfile) {
     const interests = JSON.parse(localStorage.getItem('userInterests')) || [];
     const container = document.getElementById('interestsList');
     if (!container) return;
+
+    if (!isOwnProfile) {
+        container.innerHTML = '<span style="opacity:0.6">Interests are available on owner profile only.</span>';
+        return;
+    }
+
     container.innerHTML = interests.length
         ? interests.map(i => `<span class="interest-tag">${i}</span>`).join('')
         : '<span style="opacity:0.6">No interests added yet</span>';
@@ -149,29 +159,48 @@ async function uploadAvatarImmediate(input, previewId) {
 }
 
 async function toggleEdit() {
+    if (!ownProfileView) return;
+
     const bioInput = document.getElementById('bioInput');
+    const nameEl = document.getElementById('profileName');
     const btn = document.querySelector('.btn-edit[onclick="toggleEdit()"]');
 
     if (bioInput.readOnly) {
         bioInput.readOnly = false;
+        if (nameEl) {
+            nameEl.contentEditable = 'true';
+            nameEl.focus();
+        }
         bioInput.focus();
         if (btn) {
             btn.textContent = 'Save Profile';
             btn.style.background = 'rgba(100, 200, 100, 0.3)';
         }
     } else {
+        const username = (nameEl ? nameEl.textContent : '').trim();
         const bio = bioInput.value.trim();
+
+        if (!username) {
+            alert('Username cannot be empty');
+            return;
+        }
 
         try {
             const res = await fetch(`${API}/api/users/me`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
-                body: JSON.stringify({ bio })
+                body: JSON.stringify({ username, bio })
             });
             if (!res.ok) {
                 const d = await res.json();
                 alert('Failed to save profile: ' + d.message);
             } else {
+                const updated = await res.json();
+                if (updated.username) {
+                    localStorage.setItem('username', updated.username);
+                    if (nameEl) nameEl.textContent = updated.username;
+                }
+                if (updated.email) localStorage.setItem('userEmail', updated.email);
                 alert('Profile saved!');
             }
         } catch (err) {
@@ -180,6 +209,7 @@ async function toggleEdit() {
         }
 
         bioInput.readOnly = true;
+        if (nameEl) nameEl.contentEditable = 'false';
         if (btn) {
             btn.textContent = 'Edit Profile';
             btn.style.background = 'rgba(255, 255, 255, 0.25)';

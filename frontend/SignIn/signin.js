@@ -1,15 +1,13 @@
 
+const API = window.APP_CONFIG?.API_BASE_URL || 'https://heart-nest.onrender.com';
+
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
-    const button = input.parentElement.querySelector('.toggle-password');
+    const button = input.parentElement.querySelector('.toggle-password, .icon-button');
 
-    if (input.type === 'password') {
-        input.type = 'text';
-        button.querySelector('.eye-icon').textContent = '👁️‍🗨️';
-    } else {
-        input.type = 'password';
-        button.querySelector('.eye-icon').textContent = '👁️';
-    }
+    if (!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+    if (button) button.setAttribute('aria-label', input.type === 'password' ? 'Show password' : 'Hide password');
 }
 
 function validateEmail(email) {
@@ -61,7 +59,7 @@ async function handleSignIn(e) {
     }
 
     try {
-        const res = await fetch('https://heart-nest.onrender.com/api/auth/signin', {
+        const res = await fetch(`${API}/api/auth/signin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -73,6 +71,7 @@ async function handleSignIn(e) {
             localStorage.setItem('username', data.username);
             localStorage.setItem('token', data.token);
             localStorage.setItem('userId', data.userId);
+            localStorage.setItem('userEmail', email);
 
             alert(`Welcome back, ${data.username}!`);
             window.location.href = '../Dashboard/dashboard.html';

@@ -1,14 +1,12 @@
+const API = window.APP_CONFIG?.API_BASE_URL || 'https://heart-nest.onrender.com';
+
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
-    const button = input.parentElement.querySelector('.toggle-password');
+    const button = input.parentElement.querySelector('.toggle-password, .icon-button');
 
-    if (input.type === 'password') {
-        input.type = 'text';
-        button.querySelector('.eye-icon').textContent = '👁️‍🗨️';
-    } else {
-        input.type = 'password';
-        button.querySelector('.eye-icon').textContent = '👁️';
-    }
+    if (!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+    if (button) button.setAttribute('aria-label', input.type === 'password' ? 'Show password' : 'Hide password');
 }
 
 function validateEmail(email) {
@@ -28,6 +26,10 @@ function checkPasswordMatch() {
     confirmPassword.style.borderColor = (confirmPassword.value && confirmPassword.value !== password) 
         ? 'rgba(255, 100, 100, 0.8)' 
         : 'rgba(255, 255, 255, 0.3)';
+}
+
+function validatePasswordMatch() {
+    checkPasswordMatch();
 }
 
 async function handleSignUp(e) {
@@ -60,7 +62,7 @@ async function handleSignUp(e) {
     }
 
     try {
-        const res = await fetch('https://heart-nest.onrender.com/api/auth/signup', {
+        const res = await fetch(`${API}/api/auth/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, email, password })
@@ -72,9 +74,9 @@ async function handleSignUp(e) {
             localStorage.setItem('username', data.username);
             localStorage.setItem('token', data.token);
             localStorage.setItem('userId', data.userId);
-            sessionStorage.setItem('prefillEmail', email);
-            alert('Signup successful! Redirecting to Sign In...');
-            window.location.href = '../SignIn/signin.html';
+            localStorage.setItem('userEmail', email);
+            alert('Signup successful! Redirecting to Dashboard...');
+            window.location.href = '../Dashboard/dashboard.html';
         } else {
             alert(data.message || 'Signup failed');
         }

@@ -1,4 +1,4 @@
-const API = 'https://heart-nest.onrender.com';
+const API = window.APP_CONFIG?.API_BASE_URL || 'https://heart-nest.onrender.com';
 
 function getAuthHeaders() {
     return {
@@ -8,6 +8,13 @@ function getAuthHeaders() {
 }
 
 const currentUserId = localStorage.getItem('userId');
+let communityRefreshIntervalId = null;
+let communitySocket = null;
+let communityRefreshTimeoutId = null;
+
+function isPostLikedByCurrentUser(post) {
+    return (post.likes || []).some(id => String(id) === String(currentUserId));
+}
 
 function formatTime(isoString) {
     const diff = Date.now() - new Date(isoString).getTime();
@@ -51,9 +58,9 @@ function buildPostCard(post) {
         ? `<img src="${post.author.profilePic}" alt="${post.author.username}" class="post-avatar">`
         : `<img src="https://via.placeholder.com/50" alt="${post.author.username}" class="post-avatar">`;
 
-    const isLiked = (post.likes || []).includes(currentUserId);
+    const isLiked = isPostLikedByCurrentUser(post);
     const likeCount = (post.likes || []).length;
-    const likeBtn = `<button class="post-action-btn ${isLiked ? 'liked' : ''}" onclick="likePost('${post._id}')">
+    const likeBtn = `<button id="comm-like-btn-${post._id}" class="post-action-btn like-btn ${isLiked ? 'liked' : ''}" onclick="likePost('${post._id}')">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="${isLiked ? '#DC2626' : 'none'}" xmlns="http://www.w3.org/2000/svg">
             <path d="M10 17.5C10 17.5 2.5 12.5 2.5 7.5C2.5 5.429 4.179 3.75 6.25 3.75C7.75 3.75 9.0625 4.5 10 5.625C10.9375 4.5 12.25 3.75 13.75 3.75C15.821 3.75 17.5 5.429 17.5 7.5C17.5 12.5 10 17.5 10 17.5Z" stroke="${isLiked ? '#DC2626' : '#6B7280'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -92,7 +99,7 @@ function buildPostCard(post) {
                         <path d="M17.5 8.75H14.375L15.625 3.125L10 10.625H12.5L11.25 16.875L17.5 8.75Z" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M6.25 7.5H2.5V16.25H6.25V7.5Z" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span>${post.comments.length}</span>
+                    <span id="comm-comment-count-${post._id}">${post.comments.length}</span>
                 </button>
             </div>
             <div class="comments-section" id="comm-comments-${post._id}" style="display:none">
@@ -118,18 +125,20 @@ async function likePost(postId) {
         if (countEl) countEl.textContent = data.likeCount;
         
         // Update the like button appearance
-        const postCard = document.getElementById(`comm-post-${postId}`);
-        if (postCard) {
-            const likeBtn = postCard.querySelector('.post-action-btn.liked, .post-action-btn:not(.liked)');
-            if (likeBtn) {
-                if (data.liked) {
-                    likeBtn.classList.add('liked');
-                    likeBtn.querySelector('svg path').setAttribute('fill', '#DC2626');
-                    likeBtn.querySelector('svg path').setAttribute('stroke', '#DC2626');
-                } else {
-                    likeBtn.classList.remove('liked');
-                    likeBtn.querySelector('svg path').setAttribute('fill', 'none');
-                    likeBtn.querySelector('svg path').setAttribute('stroke', '#6B7280');
+        const likeBtn = document.getElementById(`comm-like-btn-${postId}`);
+        if (likeBtn) {
+            const heartPath = likeBtn.querySelector('svg path');
+            if (data.liked) {
+                likeBtn.classList.add('liked');
+                if (heartPath) {
+                    heartPath.setAttribute('fill', '#DC2626');
+                    heartPath.setAttribute('stroke', '#DC2626');
+                }
+            } else {
+                likeBtn.classList.remove('liked');
+                if (heartPath) {
+                    heartPath.setAttribute('fill', 'none');
+                    heartPath.setAttribute('stroke', '#6B7280');
                 }
             }
         }
@@ -175,6 +184,11 @@ async function addComment(postId) {
             list.appendChild(div);
         }
         input.value = '';
+
+        const countEl = document.getElementById(`comm-comment-count-${postId}`);
+        if (countEl) {
+            countEl.textContent = String((parseInt(countEl.textContent, 10) || 0) + 1);
+        }
     } catch (err) {
         console.error(err);
     }
@@ -190,6 +204,12 @@ async function deleteComment(postId, commentId) {
         if (res.ok) {
             const el = document.getElementById(`comm-comment-${commentId}`);
             if (el) el.remove();
+
+            const countEl = document.getElementById(`comm-comment-count-${postId}`);
+            if (countEl) {
+                const currentCount = parseInt(countEl.textContent, 10) || 0;
+                countEl.textContent = String(Math.max(0, currentCount - 1));
+            }
         }
     } catch (err) {
         console.error(err);
@@ -205,4 +225,37 @@ function handleLogout() {
     }
 }
 
-window.onload = loadCommunityFeed;
+function startCommunityAutoRefresh() {
+    if (communityRefreshIntervalId) clearInterval(communityRefreshIntervalId);
+    communityRefreshIntervalId = setInterval(() => {
+        if (!document.hidden) loadCommunityFeed();
+    }, 10000);
+}
+
+function scheduleCommunityRefresh() {
+    if (communityRefreshTimeoutId) clearTimeout(communityRefreshTimeoutId);
+    communityRefreshTimeoutId = setTimeout(() => {
+        loadCommunityFeed();
+    }, 200);
+}
+
+function setupCommunityRealtimeUpdates() {
+    if (typeof io !== 'function') return;
+    if (communitySocket) return;
+
+    communitySocket = io(API, {
+        transports: ['websocket', 'polling']
+    });
+
+    communitySocket.on('feed:update', () => {
+        if (!document.hidden) {
+            scheduleCommunityRefresh();
+        }
+    });
+}
+
+window.onload = function () {
+    loadCommunityFeed();
+    startCommunityAutoRefresh();
+    setupCommunityRealtimeUpdates();
+};
