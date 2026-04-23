@@ -42,7 +42,8 @@ router.get('/mine', auth, async (req, res) => {
         const posts = await Post.find({ author: req.user.userId })
             .sort({ createdAt: -1 })
             .populate('author', 'username profilePic')
-            .populate('comments.author', 'username profilePic');
+            .populate('comments.author', 'username profilePic')
+            .populate('comments.replies.author', 'username profilePic');
         res.json(posts);
     } catch (err) {
         console.error(err);
@@ -56,7 +57,8 @@ router.get('/liked', auth, async (req, res) => {
         const posts = await Post.find({ likes: req.user.userId })
             .sort({ createdAt: -1 })
             .populate('author', 'username profilePic')
-            .populate('comments.author', 'username profilePic');
+            .populate('comments.author', 'username profilePic')
+            .populate('comments.replies.author', 'username profilePic');
         res.json(posts);
     } catch (err) {
         console.error(err);
@@ -70,7 +72,8 @@ router.get('/', auth, async (req, res) => {
         const posts = await Post.find()
             .sort({ createdAt: -1 })
             .populate('author', 'username profilePic')
-            .populate('comments.author', 'username profilePic');
+            .populate('comments.author', 'username profilePic')
+            .populate('comments.replies.author', 'username profilePic');
         res.json(posts);
     } catch (err) {
         console.error(err);
@@ -108,7 +111,18 @@ router.put('/:id/like', auth, async (req, res) => {
             post.likes.push(req.user.userId);
         }
         await post.save();
-        emitFeedUpdate(req, { type: 'post_liked', postId: req.params.id });
+
+        // Get the liker's username for notification
+        const liker = await User.findById(req.user.userId);
+        const likerUsername = liker ? liker.username : 'Someone';
+        
+        emitFeedUpdate(req, {
+            type: 'post_liked',
+            postId: req.params.id,
+            postOwnerId: post.author.toString(),
+            likerUsername: likerUsername,
+            liked: !alreadyLiked
+        });
         res.json({ liked: !alreadyLiked, likeCount: post.likes.length });
     } catch (err) {
         console.error(err);
@@ -133,7 +147,17 @@ router.post('/:id/comments', auth, async (req, res) => {
             .populate('comments.author', 'username profilePic');
         const newComment = updated.comments[updated.comments.length - 1];
 
-        emitFeedUpdate(req, { type: 'comment_added', postId: req.params.id, commentId: newComment._id.toString() });
+        // Get the commenter's username for notification
+        const commenter = await User.findById(req.user.userId);
+        const commenterUsername = commenter ? commenter.username : 'Someone';
+
+        emitFeedUpdate(req, {
+            type: 'comment_added',
+            postId: req.params.id,
+            postOwnerId: post.author.toString(),
+            commentId: newComment._id.toString(),
+            commenterUsername: commenterUsername
+        });
         res.status(201).json(newComment);
     } catch (err) {
         console.error(err);
@@ -157,6 +181,125 @@ router.delete('/:id/comments/:commentId', auth, async (req, res) => {
         await post.save();
         emitFeedUpdate(req, { type: 'comment_deleted', postId: req.params.id, commentId: req.params.commentId });
         res.json({ message: 'Comment deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// POST /api/posts/:id/comments/:commentId/replies — add reply to comment
+router.post('/:id/comments/:commentId/replies', auth, async (req, res) => {
+    try {
+        const { content } = req.body;
+        console.log(`Adding reply - postId: ${req.params.id}, commentId: ${req.params.commentId}, content: ${content}`);
+        
+        if (!content || !content.trim()) {
+            return res.status(400).json({ message: 'Reply content is required' });
+        }
+
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) {
+            console.log(`Comment not found: ${req.params.commentId}`);
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+
+        // Ensure replies array exists
+        if (!comment.replies) {
+            comment.replies = [];
+        }
+
+        comment.replies.push({
+            author: req.user.userId,
+            content: content.trim(),
+            likes: []
+        });
+        await post.save();
+
+        const updated = await Post.findById(req.params.id)
+            .populate('comments.author', 'username profilePic')
+            .populate('comments.replies.author', 'username profilePic');
+
+        const updatedComment = updated.comments.id(req.params.commentId);
+        const newReply = updatedComment.replies[updatedComment.replies.length - 1];
+
+        res.status(201).json(newReply);
+    } catch (err) {
+        console.error('Error adding reply:', err);
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
+// DELETE /api/posts/:id/comments/:commentId/replies/:replyId — delete own reply
+router.delete('/:id/comments/:commentId/replies/:replyId', auth, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+        const reply = comment.replies.id(req.params.replyId);
+        if (!reply) return res.status(404).json({ message: 'Reply not found' });
+
+        if (reply.author.toString() !== req.user.userId) {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+
+        reply.deleteOne();
+        await post.save();
+        res.json({ message: 'Reply deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// PUT /api/posts/:id/comments/:commentId/like — like/unlike a comment
+router.put('/:id/comments/:commentId/like', auth, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+        const alreadyLiked = comment.likes.some(id => id.toString() === req.user.userId);
+        if (alreadyLiked) {
+            comment.likes.pull(req.user.userId);
+        } else {
+            comment.likes.push(req.user.userId);
+        }
+        await post.save();
+        res.json({ liked: !alreadyLiked, likeCount: comment.likes.length });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// PUT /api/posts/:id/comments/:commentId/replies/:replyId/like — like/unlike a reply
+router.put('/:id/comments/:commentId/replies/:replyId/like', auth, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+        const reply = comment.replies.id(req.params.replyId);
+        if (!reply) return res.status(404).json({ message: 'Reply not found' });
+
+        const alreadyLiked = reply.likes.some(id => id.toString() === req.user.userId);
+        if (alreadyLiked) {
+            reply.likes.pull(req.user.userId);
+        } else {
+            reply.likes.push(req.user.userId);
+        }
+        await post.save();
+        res.json({ liked: !alreadyLiked, likeCount: reply.likes.length });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

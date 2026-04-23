@@ -64,19 +64,12 @@ async function loadProfile() {
         document.getElementById('profileName').textContent = data.username || '';
         if (isOwnProfile && data.username) localStorage.setItem('username', data.username);
         
-        // For own profile: keep bio ALWAYS empty. For others: show their bio
+        // Load bio for both own and other profiles
         const bioInputEl = document.getElementById('bioInput');
         if (bioInputEl) {
-            if (isOwnProfile) {
-                // ALWAYS force bio to empty for own profile
-                bioInputEl.value = '';
-                bioInputEl.textContent = '';
-                console.log('✓ Bio cleared to empty for own profile');
-            } else {
-                // Show other user's bio
-                bioInputEl.value = data.bio || '';
-                console.log('✓ Bio loaded for other user:', data.bio);
-            }
+            // Load the actual bio from backend (empty string by default for new users)
+            bioInputEl.value = data.bio || '';
+            console.log('✓ Bio loaded:', data.bio || '(empty)');
         } else {
             console.error('❌ bioInput element not found!');
         }
@@ -144,9 +137,21 @@ function loadInterests(isOwnProfile) {
 
 function loadSettings(isOwnProfile) {
     // Only show settings for own profile
+    const settingsCard = document.querySelector('.detail-card:has(h3:contains("Account Settings"))');
+    const settingsContainer = document.getElementById('settingsContainer');
+    
     if (!isOwnProfile) {
         console.log('Settings hidden (viewing other profile)');
+        // Hide settings card for other users
+        if (settingsContainer) {
+            settingsContainer.style.display = 'none';
+        }
         return;
+    }
+    
+    // Show settings for own profile
+    if (settingsContainer) {
+        settingsContainer.style.display = 'block';
     }
     
     try {
@@ -238,16 +243,16 @@ async function uploadAvatarImmediate(input, previewId) {
             });
             // Store in localStorage for persistence across reloads
             localStorage.setItem('userProfilePic', profilePic);
-            // Update lastUpdateTime to track profile changes
             localStorage.setItem('lastProfilePicUpdate', new Date().toISOString());
-            // Success - no alert needed, user can see the image updated
+            // Show success message without alert
             console.log('✓ Profile picture updated successfully!');
         } else {
             const error = await res.json();
+            console.error('Upload error:', error);
             alert('Upload failed: ' + (error.message || 'Please try again.'));
         }
     } catch (err) {
-        console.error(err);
+        console.error('Upload error:', err);
         alert('Upload failed: Network error. Please check your connection.');
     } finally {
         // Reset input so same file can be selected again

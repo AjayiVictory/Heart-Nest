@@ -26,6 +26,17 @@ function formatTime(isoString) {
     return `${Math.floor(hours / 24)}d ago`;
 }
 
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
 async function loadCommunityFeed() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -55,14 +66,14 @@ async function loadCommunityFeed() {
 
 function buildPostCard(post) {
     const avatar = post.author.profilePic
-        ? `<img src="${post.author.profilePic}" alt="${post.author.username}" class="post-avatar">`
-        : `<img src="https://via.placeholder.com/50" alt="${post.author.username}" class="post-avatar">`;
+        ? `<img src="${post.author.profilePic}" alt="${post.author.username}" class="post-avatar" style="cursor:pointer;" onclick="window.location.href='../profile/profile.html?userId=${post.author._id}'">`
+        : `<img src="https://via.placeholder.com/50" alt="${post.author.username}" class="post-avatar" style="cursor:pointer;" onclick="window.location.href='../profile/profile.html?userId=${post.author._id}'">`;
 
     const isLiked = isPostLikedByCurrentUser(post);
     const likeCount = (post.likes || []).length;
     const likeBtn = `<button id="comm-like-btn-${post._id}" class="post-action-btn like-btn ${isLiked ? 'liked' : ''}" onclick="likePost('${post._id}')">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="${isLiked ? '#DC2626' : 'none'}" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 17.5C10 17.5 2.5 12.5 2.5 7.5C2.5 5.429 4.179 3.75 6.25 3.75C7.75 3.75 9.0625 4.5 10 5.625C10.9375 4.5 12.25 3.75 13.75 3.75C15.821 3.75 17.5 5.429 17.5 7.5C17.5 12.5 10 17.5 10 17.5Z" stroke="${isLiked ? '#DC2626' : '#6B7280'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="${isLiked ? 'currentColor' : 'none'}" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 17.5C10 17.5 2.5 12.5 2.5 7.5C2.5 5.429 4.179 3.75 6.25 3.75C7.75 3.75 9.0625 4.5 10 5.625C10.9375 4.5 12.25 3.75 13.75 3.75C15.821 3.75 17.5 5.429 17.5 7.5C17.5 12.5 10 17.5 10 17.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span id="comm-like-count-${post._id}">${likeCount}</span>
     </button>`;
@@ -72,13 +83,56 @@ function buildPostCard(post) {
         const commentAvatar = c.author.profilePic
             ? `<img src="${c.author.profilePic}" alt="${c.author.username}" class="comment-avatar">`
             : `<div class="comment-avatar">${c.author.username[0].toUpperCase()}</div>`;
+        
+        const isCommentLiked = (c.likes || []).some(id => String(id) === String(currentUserId));
+        const commentLikeCount = (c.likes || []).length;
+        
+        const repliesHtml = (c.replies || []).map(r => {
+            const isOwnReply = r.author._id === currentUserId;
+            const replyAvatar = r.author.profilePic
+                ? `<img src="${r.author.profilePic}" alt="${r.author.username}" class="comment-avatar" style="width:28px;height:28px;">`
+                : `<div class="comment-avatar" style="width:28px;height:28px;font-size:12px;">${r.author.username[0].toUpperCase()}</div>`;
+            
+            const isReplyLiked = (r.likes || []).some(id => String(id) === String(currentUserId));
+            const replyLikeCount = (r.likes || []).length;
+            
+            return `<div class="comment-item reply-item" id="comm-reply-${r._id}" style="margin-left:40px;margin-top:8px;">
+                ${replyAvatar}
+                <div class="comment-content">
+                    <strong>${escapeHtml(r.author.username)}</strong>
+                    <p>${escapeHtml(r.content)}</p>
+                    <div style="font-size:0.85rem;margin-top:4px;gap:8px;display:flex;">
+                        <button class="comment-action-btn" onclick="toggleCommReplyLike('${post._id}','${c._id}','${r._id}')" style="background:none;border:none;cursor:pointer;color:${isReplyLiked ? '#DC2626' : '#999'};">
+                            ❤️ ${replyLikeCount > 0 ? replyLikeCount : ''}
+                        </button>
+                        ${isOwnReply ? `<button class="comment-action-btn" onclick="deleteCommReply('${post._id}','${c._id}','${r._id}')" style="background:none;border:none;cursor:pointer;color:#999;">✕</button>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+        
         return `<div class="comment-item" id="comm-comment-${c._id}">
             ${commentAvatar}
             <div class="comment-content">
-                <strong>${c.author.username}</strong>
-                <p>${c.content}</p>
+                <strong>${escapeHtml(c.author.username)}</strong>
+                <p>${escapeHtml(c.content)}</p>
+                <div style="font-size:0.85rem;margin-top:4px;gap:8px;display:flex;">
+                    <button class="comment-action-btn" onclick="toggleCommCommentLike('${post._id}','${c._id}')" style="background:none;border:none;cursor:pointer;color:${isCommentLiked ? '#DC2626' : '#999'};">
+                        ❤️ ${commentLikeCount > 0 ? commentLikeCount : ''}
+                    </button>
+                    <button class="comment-action-btn" onclick="toggleCommReplyForm('${post._id}','${c._id}')" style="background:none;border:none;cursor:pointer;color:#7C3AED;font-weight:500;">
+                        Reply
+                    </button>
+                    ${isOwnComment ? `<button class="comment-action-btn" onclick="deleteComment('${post._id}','${c._id}')" style="background:none;border:none;cursor:pointer;color:#999;">✕</button>` : ''}
+                </div>
+                <div id="comm-reply-form-${c._id}" style="display:none;margin-top:8px;">
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="comm-replyInput-${c._id}" placeholder="Write a reply..." style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:0.9rem;">
+                        <button onclick="addCommReply('${post._id}','${c._id}')" style="padding:6px 12px;background:#7C3AED;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;">Send</button>
+                    </div>
+                </div>
             </div>
-            ${isOwnComment ? `<button class="delete-comment-btn" onclick="deleteComment('${post._id}','${c._id}')">✕</button>` : ''}
+            ${repliesHtml ? `<div style="margin-top:8px;">${repliesHtml}</div>` : ''}
         </div>`;
     }).join('');
 
@@ -96,8 +150,8 @@ function buildPostCard(post) {
                 ${likeBtn}
                 <button class="post-action-btn" onclick="toggleComments('${post._id}')">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17.5 8.75H14.375L15.625 3.125L10 10.625H12.5L11.25 16.875L17.5 8.75Z" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M6.25 7.5H2.5V16.25H6.25V7.5Z" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M17.5 8.75H14.375L15.625 3.125L10 10.625H12.5L11.25 16.875L17.5 8.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.25 7.5H2.5V16.25H6.25V7.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span id="comm-comment-count-${post._id}">${post.comments.length}</span>
                 </button>
@@ -226,17 +280,16 @@ function handleLogout() {
 }
 
 function startCommunityAutoRefresh() {
+    // Disabled: Real-time updates via Socket.io handle feed updates
+    // Auto-refresh was causing constant page reloads
     if (communityRefreshIntervalId) clearInterval(communityRefreshIntervalId);
-    communityRefreshIntervalId = setInterval(() => {
-        if (!document.hidden) loadCommunityFeed();
-    }, 10000);
+    // Don't set up auto-refresh anymore - Socket.io handles updates
 }
 
 function scheduleCommunityRefresh() {
     if (communityRefreshTimeoutId) clearTimeout(communityRefreshTimeoutId);
-    communityRefreshTimeoutId = setTimeout(() => {
-        loadCommunityFeed();
-    }, 200);
+    // Disabled: Avoid triggering reload loops
+    // Only manual refresh when truly needed
 }
 
 function setupCommunityRealtimeUpdates() {
@@ -258,12 +311,99 @@ function setupCommunityRealtimeUpdates() {
                     const newPostCard = buildPostCard(data.post);
                     feed.insertAdjacentHTML('afterbegin', newPostCard);
                 }
-            } else {
-                // For other updates (likes, comments, etc), refresh the feed
-                scheduleCommunityRefresh();
             }
+            // Ignore all other updates - they're handled locally or don't need page refresh
         }
     });
+}
+
+function toggleCommReplyForm(postId, commentId) {
+    const formEl = document.getElementById(`comm-reply-form-${commentId}`);
+    if (formEl) {
+        formEl.style.display = formEl.style.display === 'none' ? 'flex' : 'none';
+        if (formEl.style.display === 'flex') {
+            const input = document.getElementById(`comm-replyInput-${commentId}`);
+            if (input) input.focus();
+        }
+    }
+}
+
+async function addCommReply(postId, commentId) {
+    const input = document.getElementById(`comm-replyInput-${commentId}`);
+    const content = input?.value?.trim();
+    if (!content) {
+        alert('Reply cannot be empty');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments/${commentId}/replies`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ content })
+        });
+        if (res.ok) {
+            const reply = await res.json();
+            const formEl = document.getElementById(`comm-reply-form-${commentId}`);
+            if (formEl) formEl.style.display = 'none';
+            if (input) input.value = '';
+            
+            // Reload to show reply
+            loadCommunityFeed();
+        } else {
+            const errData = await res.json().catch(() => ({}));
+            console.error('Reply error:', res.status, errData);
+            alert(`Failed to add reply: ${errData.message || res.statusText}`);
+        }
+    } catch (err) {
+        console.error('Reply exception:', err);
+        alert('Error adding reply: ' + err.message);
+    }
+}
+
+async function deleteCommReply(postId, commentId, replyId) {
+    if (!confirm('Delete this reply?')) return;
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        if (res.ok) {
+            const el = document.getElementById(`comm-reply-${replyId}`);
+            if (el) el.remove();
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Error deleting reply');
+    }
+}
+
+async function toggleCommCommentLike(postId, commentId) {
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments/${commentId}/like`, {
+            method: 'PUT',
+            headers: getAuthHeaders()
+        });
+        if (res.ok) {
+            loadCommunityFeed();
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function toggleCommReplyLike(postId, commentId, replyId) {
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments/${commentId}/replies/${replyId}/like`, {
+            method: 'PUT',
+            headers: getAuthHeaders()
+        });
+        if (res.ok) {
+            loadCommunityFeed();
+        }
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 window.onload = function () {

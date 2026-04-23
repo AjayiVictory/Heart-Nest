@@ -89,8 +89,12 @@ async function updateDashboardStats() {
         currentUser = displayUsername;
         if (data.email) localStorage.setItem('userEmail', data.email);
 
-        const picEl = document.getElementById('dashProfilePic');
-        if (picEl && data.profilePic) picEl.src = data.profilePic;
+        // Update profile picture from server and persist to localStorage
+        if (data.profilePic) {
+            localStorage.setItem('userProfilePic', data.profilePic);
+            const picEl = document.getElementById('dashProfilePic');
+            if (picEl) picEl.src = data.profilePic;
+        }
     } catch (err) {
         console.error('Failed to load stats:', err);
     }
@@ -136,8 +140,8 @@ function formatTime(isoString) {
 function buildPostHTML(post) {
     const isOwn = post.author._id === currentUserId;
     const avatar = post.author.profilePic
-        ? `<img src="${post.author.profilePic}" alt="${post.author.username}" class="post-avatar">`
-        : `<img src="https://via.placeholder.com/40" alt="${post.author.username}" class="post-avatar">`;
+        ? `<img src="${post.author.profilePic}" alt="${post.author.username}" class="post-avatar" style="cursor:pointer;" onclick="window.location.href='../profile/profile.html?userId=${post.author._id}'">`
+        : `<img src="https://via.placeholder.com/40" alt="${post.author.username}" class="post-avatar" style="cursor:pointer;" onclick="window.location.href='../profile/profile.html?userId=${post.author._id}'">`;
     const deleteBtn = isOwn
         ? `<button class="post-action-btn" onclick="deletePost('${post._id}')"><span>🗑️</span></button>`
         : '';
@@ -145,8 +149,8 @@ function buildPostHTML(post) {
     const isLiked = isPostLikedByCurrentUser(post);
     const likeCount = (post.likes || []).length;
     const likeBtn = `<button id="like-btn-${post._id}" class="post-action-btn like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${post._id}')">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="${isLiked ? '#DC2626' : 'none'}" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 17.5C10 17.5 2.5 12.5 2.5 7.5C2.5 5.429 4.179 3.75 6.25 3.75C7.75 3.75 9.0625 4.5 10 5.625C10.9375 4.5 12.25 3.75 13.75 3.75C15.821 3.75 17.5 5.429 17.5 7.5C17.5 12.5 10 17.5 10 17.5Z" stroke="${isLiked ? '#DC2626' : '#6B7280'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="${isLiked ? 'currentColor' : 'none'}" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 17.5C10 17.5 2.5 12.5 2.5 7.5C2.5 5.429 4.179 3.75 6.25 3.75C7.75 3.75 9.0625 4.5 10 5.625C10.9375 4.5 12.25 3.75 13.75 3.75C15.821 3.75 17.5 5.429 17.5 7.5C17.5 12.5 10 17.5 10 17.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span id="like-count-${post._id}">${likeCount}</span>
     </button>`;
@@ -156,13 +160,56 @@ function buildPostHTML(post) {
         const commentAvatar = c.author.profilePic
             ? `<img src="${c.author.profilePic}" alt="${c.author.username}" class="comment-avatar">`
             : `<div class="comment-avatar">${c.author.username[0].toUpperCase()}</div>`;
+        
+        const isCommentLiked = (c.likes || []).some(id => String(id) === String(currentUserId));
+        const commentLikeCount = (c.likes || []).length;
+        
+        const repliesHtml = (c.replies || []).map(r => {
+            const isOwnReply = r.author._id === currentUserId;
+            const replyAvatar = r.author.profilePic
+                ? `<img src="${r.author.profilePic}" alt="${r.author.username}" class="comment-avatar" style="width:28px;height:28px;">`
+                : `<div class="comment-avatar" style="width:28px;height:28px;font-size:12px;">${r.author.username[0].toUpperCase()}</div>`;
+            
+            const isReplyLiked = (r.likes || []).some(id => String(id) === String(currentUserId));
+            const replyLikeCount = (r.likes || []).length;
+            
+            return `<div class="comment-item reply-item" id="reply-${r._id}" style="margin-left:40px;margin-top:8px;">
+                ${replyAvatar}
+                <div class="comment-content">
+                    <strong>${escapeHtml(r.author.username)}</strong>
+                    <p>${escapeHtml(r.content)}</p>
+                    <div style="font-size:0.85rem;margin-top:4px;gap:8px;display:flex;">
+                        <button class="comment-action-btn" onclick="toggleReplyLike('${post._id}','${c._id}','${r._id}')" style="background:none;border:none;cursor:pointer;color:${isReplyLiked ? '#DC2626' : '#999'};">
+                            ❤️ ${replyLikeCount > 0 ? replyLikeCount : ''}
+                        </button>
+                        ${isOwnReply ? `<button class="comment-action-btn" onclick="deleteReply('${post._id}','${c._id}','${r._id}')" style="background:none;border:none;cursor:pointer;color:#999;">✕</button>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+        
         return `<div class="comment-item" id="comment-${c._id}">
             ${commentAvatar}
             <div class="comment-content">
-                <strong>${c.author.username}</strong>
-                <p>${c.content}</p>
+                <strong>${escapeHtml(c.author.username)}</strong>
+                <p>${escapeHtml(c.content)}</p>
+                <div style="font-size:0.85rem;margin-top:4px;gap:8px;display:flex;">
+                    <button class="comment-action-btn" onclick="toggleCommentLike('${post._id}','${c._id}')" style="background:none;border:none;cursor:pointer;color:${isCommentLiked ? '#DC2626' : '#999'};">
+                        ❤️ ${commentLikeCount > 0 ? commentLikeCount : ''}
+                    </button>
+                    <button class="comment-action-btn" onclick="toggleReplyForm('${post._id}','${c._id}')" style="background:none;border:none;cursor:pointer;color:#7C3AED;font-weight:500;">
+                        Reply
+                    </button>
+                    ${isOwnComment ? `<button class="comment-action-btn" onclick="deleteComment('${post._id}','${c._id}')" style="background:none;border:none;cursor:pointer;color:#999;">✕</button>` : ''}
+                </div>
+                <div id="reply-form-${c._id}" style="display:none;margin-top:8px;">
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="replyInput-${c._id}" placeholder="Write a reply..." style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:0.9rem;">
+                        <button onclick="addReply('${post._id}','${c._id}')" style="padding:6px 12px;background:#7C3AED;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;">Send</button>
+                    </div>
+                </div>
             </div>
-            ${isOwnComment ? `<button class="delete-comment-btn" onclick="deleteComment('${post._id}','${c._id}')">✕</button>` : ''}
+            ${repliesHtml ? `<div style="margin-top:8px;">${repliesHtml}</div>` : ''}
         </div>`;
     }).join('');
 
@@ -171,7 +218,7 @@ function buildPostHTML(post) {
             <div class="post-header">
                 ${avatar}
                 <div class="post-user-info">
-                    <h4>${post.author.username}</h4>
+                    <h4 style="cursor:pointer;color:#7C3AED;" onclick="window.location.href='../profile/profile.html?userId=${post.author._id}'">${escapeHtml(post.author.username)}</h4>
                     <span class="post-time">${formatTime(post.createdAt)}</span>
                 </div>
                 ${deleteBtn}
@@ -181,8 +228,8 @@ function buildPostHTML(post) {
                 ${likeBtn}
                 <button class="post-action-btn" onclick="toggleComments('${post._id}')">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17.5 8.75H14.375L15.625 3.125L10 10.625H12.5L11.25 16.875L17.5 8.75Z" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M6.25 7.5H2.5V16.25H6.25V7.5Z" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M17.5 8.75H14.375L15.625 3.125L10 10.625H12.5L11.25 16.875L17.5 8.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.25 7.5H2.5V16.25H6.25V7.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span id="comment-count-${post._id}">${post.comments.length}</span>
                 </button>
@@ -273,41 +320,49 @@ function toggleComments(postId) {
 async function addComment(postId) {
     const input = document.getElementById(`commentInput-${postId}`);
     const content = input.value.trim();
-    if (!content) return;
+    if (!content) {
+        alert('Please write a comment');
+        return;
+    }
     try {
         const res = await fetch(`${API}/api/posts/${postId}/comments`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ content })
         });
-        if (!res.ok) return;
+        if (!res.ok) {
+            const err = await res.json();
+            alert('Failed to add comment: ' + (err.message || 'Try again'));
+            return;
+        }
         const comment = await res.json();
         const list = document.querySelector(`#comments-${postId} .comments-list`);
         if (list) {
             const isOwnComment = comment.author._id === currentUserId;
             const commentAvatar = comment.author.profilePic
                 ? `<img src="${comment.author.profilePic}" alt="${comment.author.username}" class="comment-avatar">`
-                : `<div class="comment-avatar">${comment.author.username[0].toUpperCase()}</div>`;
+                : `<div class="comment-avatar">${escapeHtml(comment.author.username[0].toUpperCase())}</div>`;
             const div = document.createElement('div');
             div.className = 'comment-item';
             div.id = `comment-${comment._id}`;
             div.innerHTML = `${commentAvatar}
                 <div class="comment-content">
-                    <strong>${comment.author.username}</strong>
-                    <p>${comment.content}</p>
+                    <strong>${escapeHtml(comment.author.username)}</strong>
+                    <p>${escapeHtml(comment.content)}</p>
                 </div>
                 ${isOwnComment ? `<button class="delete-comment-btn" onclick="deleteComment('${postId}','${comment._id}')">✕</button>` : ''}`;
             list.appendChild(div);
         }
         input.value = '';
         
-        // Update comment count
+        // Update comment count & emit real-time update
         const commentCountSpan = document.getElementById(`comment-count-${postId}`);
         if (commentCountSpan) {
             commentCountSpan.textContent = String((parseInt(commentCountSpan.textContent, 10) || 0) + 1);
         }
     } catch (err) {
-        console.error(err);
+        console.error('Comment error:', err);
+        alert('Error adding comment. Please try again.');
     }
 }
 
@@ -327,9 +382,13 @@ async function deleteComment(postId, commentId) {
                 const currentCount = parseInt(commentCountSpan.textContent, 10) || 0;
                 commentCountSpan.textContent = String(Math.max(0, currentCount - 1));
             }
+        } else {
+            const err = await res.json();
+            alert('Failed to delete comment: ' + (err.message || 'Try again'));
         }
     } catch (err) {
-        console.error(err);
+        console.error('Delete comment error:', err);
+        alert('Error deleting comment.');
     }
 }
 
@@ -347,6 +406,140 @@ async function deletePost(postId) {
         }
     } catch (err) {
         console.error(err);
+    }
+}
+
+function toggleReplyForm(postId, commentId) {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    if (form) {
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        if (form.style.display === 'block') {
+            document.getElementById(`replyInput-${commentId}`).focus();
+        }
+    }
+}
+
+async function addReply(postId, commentId) {
+    const input = document.getElementById(`replyInput-${commentId}`);
+    const content = input.value.trim();
+    if (!content) {
+        alert('Please write a reply');
+        return;
+    }
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments/${commentId}/replies`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ content })
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            alert('Failed to add reply: ' + (err.message || 'Try again'));
+            return;
+        }
+        const reply = await res.json();
+        
+        // Create reply HTML and add it to the page
+        const replyAvatar = reply.author.profilePic
+            ? `<img src="${reply.author.profilePic}" alt="${reply.author.username}" class="comment-avatar" style="width:28px;height:28px;">`
+            : `<div class="comment-avatar" style="width:28px;height:28px;font-size:12px;">${reply.author.username[0].toUpperCase()}</div>`;
+        
+        const replyHtml = `<div class="comment-item reply-item" id="reply-${reply._id}" style="margin-left:40px;margin-top:8px;">
+            ${replyAvatar}
+            <div class="comment-content">
+                <strong>${escapeHtml(reply.author.username)}</strong>
+                <p>${escapeHtml(reply.content)}</p>
+                <div style="font-size:0.85rem;margin-top:4px;gap:8px;display:flex;">
+                    <button class="comment-action-btn" onclick="toggleReplyLike('${postId}','${commentId}','${reply._id}')" style="background:none;border:none;cursor:pointer;color:#999;">
+                        ❤️ 0
+                    </button>
+                    <button class="comment-action-btn" onclick="deleteReply('${postId}','${commentId}','${reply._id}')" style="background:none;border:none;cursor:pointer;color:#999;">✕</button>
+                </div>
+            </div>
+        </div>`;
+        
+        // Find where to insert the reply (after existing replies or before reply form)
+        const commentElement = document.getElementById(`comment-${commentId}`);
+        if (commentElement) {
+            const replyForm = commentElement.querySelector(`#reply-form-${commentId}`);
+            if (replyForm) {
+                replyForm.insertAdjacentHTML('beforebegin', replyHtml);
+            } else {
+                commentElement.insertAdjacentHTML('beforeend', replyHtml);
+            }
+        }
+        
+        input.value = '';
+        toggleReplyForm(postId, commentId);
+    } catch (err) {
+        console.error('Add reply error:', err);
+        alert('Error adding reply.');
+    }
+}
+
+async function deleteReply(postId, commentId, replyId) {
+    if (!confirm('Delete this reply?')) return;
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        if (res.ok) {
+            const el = document.getElementById(`reply-${replyId}`);
+            if (el) el.remove();
+        } else {
+            const err = await res.json();
+            alert('Failed to delete reply: ' + (err.message || 'Try again'));
+        }
+    } catch (err) {
+        console.error('Delete reply error:', err);
+        alert('Error deleting reply.');
+    }
+}
+
+async function toggleCommentLike(postId, commentId) {
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments/${commentId}/like`, {
+            method: 'PUT',
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        // Update like button display
+        const commentElement = document.getElementById(`comment-${commentId}`);
+        if (commentElement) {
+            const likeBtn = commentElement.querySelector('button[onclick*="toggleCommentLike"]');
+            if (likeBtn) {
+                likeBtn.style.color = data.liked ? '#DC2626' : '#999';
+                likeBtn.textContent = `❤️ ${data.likeCount > 0 ? data.likeCount : ''}`;
+            }
+        }
+    } catch (err) {
+        console.error('Like comment error:', err);
+    }
+}
+
+async function toggleReplyLike(postId, commentId, replyId) {
+    try {
+        const res = await fetch(`${API}/api/posts/${postId}/comments/${commentId}/replies/${replyId}/like`, {
+            method: 'PUT',
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        // Update like button display
+        const replyElement = document.getElementById(`reply-${replyId}`);
+        if (replyElement) {
+            const likeBtn = replyElement.querySelector('button[onclick*="toggleReplyLike"]');
+            if (likeBtn) {
+                likeBtn.style.color = data.liked ? '#DC2626' : '#999';
+                likeBtn.textContent = `❤️ ${data.likeCount > 0 ? data.likeCount : ''}`;
+            }
+        }
+    } catch (err) {
+        console.error('Like reply error:', err);
     }
 }
 
@@ -443,6 +636,13 @@ function init() {
     }
     currentUser = localStorage.getItem('username') || 'Guest';
     currentUserId = localStorage.getItem('userId');
+
+    // Load profile picture from localStorage if available
+    const storedProfilePic = localStorage.getItem('userProfilePic');
+    if (storedProfilePic) {
+        const picEl = document.getElementById('dashProfilePic');
+        if (picEl) picEl.src = storedProfilePic;
+    }
 
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach((tab, index) => {
@@ -803,14 +1003,44 @@ function toggleAnimationsFromSettings() {
     }
 }
 
-function openChangePassword() {
+async function openChangePassword() {
     closeModal('settingsModal');
+    
+    // Create a modal for password change with proper fields
+    const currentPassword = prompt('Enter your current password:');
+    if (!currentPassword) return;
+    
     const newPassword = prompt('Enter your new password (minimum 8 characters):');
-    if (newPassword && newPassword.length >= 8) {
-        localStorage.setItem('userPassword', newPassword);
-        alert('Password changed successfully!');
-    } else if (newPassword) {
+    if (!newPassword) return;
+    
+    if (newPassword.length < 8) {
         alert('Password must be at least 8 characters long.');
+        return;
+    }
+    
+    const confirmPassword = prompt('Confirm your new password:');
+    if (confirmPassword !== newPassword) {
+        alert('Passwords do not match.');
+        return;
+    }
+    
+    try {
+        const res = await fetch(`${API}/api/users/me/password`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+        
+        if (!res.ok) {
+            const data = await res.json();
+            alert('Error: ' + (data.message || 'Failed to change password'));
+            return;
+        }
+        
+        alert('✓ Password changed successfully!');
+    } catch (err) {
+        console.error('Password change error:', err);
+        alert('Failed to change password. Please try again.');
     }
 }
 
@@ -926,7 +1156,22 @@ function setupRealtimeUpdates() {
 
     socket.on('feed:update', (data) => {
         if (!document.hidden) {
-            // For new posts created by current user, immediately add them to the feed
+            // Handle likes on your posts
+            if (data.type === 'post_liked' && data.postOwnerId === currentUserId && data.likerUsername) {
+                addNotification('❤️ New Like', `${data.likerUsername} liked your post`);
+            }
+            
+            // Handle comments on your posts
+            if (data.type === 'comment_added' && data.postOwnerId === currentUserId && data.commenterUsername) {
+                addNotification('💬 New Comment', `${data.commenterUsername} commented on your post`);
+            }
+            
+            // Handle follows
+            if (data.type === 'user_followed' && data.followedUserId === currentUserId && data.followerUsername) {
+                addNotification('👥 New Follower', `${data.followerUsername} started following you`);
+            }
+
+            // For new posts created by current user
             if (data && data.type === 'post_created' && data.post && data.post.author._id === currentUserId && activeTab === 'posts') {
                 const feed = document.getElementById('dashFeed');
                 if (feed && feed.textContent.includes('No posts')) {
