@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In - HeartNest</title>
     <link rel="stylesheet" href="signin.css">
 </head>
+
 <body>
     <header class="header">
         <div class="container">
             <div class="header-content">
                 <a href="../index.html" class="logo">
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 28C16 28 4 20 4 12C4 8.686 6.686 6 10 6C12.4 6 14.5 7.2 16 9C17.5 7.2 19.6 6 22 6C25.314 6 28 8.686 28 12C28 20 16 28 16 28Z" fill="#0066CC"/>
+                        <path
+                            d="M16 28C16 28 4 20 4 12C4 8.686 6.686 6 10 6C12.4 6 14.5 7.2 16 9C17.5 7.2 19.6 6 22 6C25.314 6 28 8.686 28 12C28 20 16 28 16 28Z"
+                            fill="#0066CC" />
                     </svg>
                     <span class="logo-text">HeartNest</span>
                 </a>
@@ -30,12 +34,13 @@
                 <div class="back-link">
                     <a href="../index.html">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                         Back to home
                     </a>
                 </div>
-                
+
                 <div class="auth-card">
                     <div class="auth-header">
                         <h1>Welcome Back</h1>
@@ -44,29 +49,21 @@
 
                     <form id="signinForm" class="auth-form">
                         <div class="form-group">
-                            <label for="email">Email Address</label>
-                            <input 
-                                type="email" 
-                                id="email" 
-                                placeholder="name@example.com" 
-                                oninput="checkEmailValidity()"
-                                required
-                            >
+                            <label for="email">Email</label>
+                            <input type="email" id="email" placeholder="Enter your email" required>
                         </div>
 
                         <div class="form-group">
                             <label for="password">Password</label>
                             <div class="input-with-icon">
-                                <input 
-                                    type="password" 
-                                    id="password" 
-                                    placeholder="Enter your password" 
-                                    required
-                                >
+                                <input type="password" id="password" placeholder="Enter your password" required>
                                 <button type="button" class="icon-button" onclick="togglePassword('password')">
-                                    <svg class="eye-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M10 4C4.5 4 1 10 1 10s3.5 6 9 6 9-6 9-6-3.5-6-9-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/>
+                                    <svg class="eye-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M10 4C4.5 4 1 10 1 10s3.5 6 9 6 9-6 9-6-3.5-6-9-6z"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                        <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="2" />
                                     </svg>
                                 </button>
                             </div>
@@ -74,8 +71,8 @@
 
                         <div class="form-footer">
                             <div class="checkbox-group">
-                                <input type="checkbox" id="remember">
-                                <label for="remember">Remember me</label>
+                                <input type="checkbox" id="rememberEmail">
+                                <label for="rememberEmail">Remember me</label>
                             </div>
                             <a href="#" class="forgot-link">Forgot password?</a>
                         </div>
@@ -88,29 +85,35 @@
 
                         <div class="social-buttons">
                             <button type="button" class="btn-social">
-                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M18 10.2c0-5-4-8.2-8-8.2-4.4 0-8 3.6-8 8s3.6 8 8 8c3.5 0 6.5-2.3 7.5-5.5h-7.5v-2.3h9.8c.1.3.2.7.2 1" fill="#4285F4"/>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M18 10.2c0-5-4-8.2-8-8.2-4.4 0-8 3.6-8 8s3.6 8 8 8c3.5 0 6.5-2.3 7.5-5.5h-7.5v-2.3h9.8c.1.3.2.7.2 1"
+                                        fill="#4285F4" />
                                 </svg>
                                 <span>Google</span>
                             </button>
                             <button type="button" class="btn-social">
-                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M17.5 10c0 3.8-2.8 6.9-6.5 7.4v-5.2h1.8l.3-2.2h-2.1V8.7c0-.6.3-1.2 1.3-1.2h1V5.7s-.9-.2-1.8-.2c-1.8 0-3 1.1-3 3.1v1.8h-2v2.2h2v5.2C5.3 16.9 2.5 13.8 2.5 10c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5z" fill="#1877F2"/>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M17.5 10c0 3.8-2.8 6.9-6.5 7.4v-5.2h1.8l.3-2.2h-2.1V8.7c0-.6.3-1.2 1.3-1.2h1V5.7s-.9-.2-1.8-.2c-1.8 0-3 1.1-3 3.1v1.8h-2v2.2h2v5.2C5.3 16.9 2.5 13.8 2.5 10c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5z"
+                                        fill="#1877F2" />
                                 </svg>
                                 <span>Facebook</span>
                             </button>
                         </div>
 
                         <p class="form-switch">
-                            Don't have an account? 
+                            Don't have an account?
                             <a href="../SignUp/signup.html">Sign up</a>
                         </p>
                     </form>
                 </div>
 
                 <p class="terms-notice">
-                    By continuing, you agree to our 
-                    <a href="#">Terms of Service</a> and 
+                    By continuing, you agree to our
+                    <a href="#">Terms of Service</a> and
                     <a href="#">Privacy Policy</a>
                 </p>
             </div>
@@ -120,4 +123,5 @@
     <script src="../config.js"></script>
     <script src="signin.js"></script>
 </body>
+
 </html>

@@ -75,7 +75,6 @@ async function handleSignUp(e) {
             localStorage.setItem('token', data.token);
             localStorage.setItem('userId', data.userId);
             localStorage.setItem('userEmail', email);
-            alert('Signup successful! Redirecting to Dashboard...');
             window.location.href = '../Dashboard/dashboard.html';
         } else {
             alert(data.message || 'Signup failed');

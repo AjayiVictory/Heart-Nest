@@ -44,13 +44,13 @@ router.post('/signup', async (req, res) => {
 
 router.post('/signin', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { username, email, password } = req.body;
 
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Please provide email and password' });
+        if (((!username && !email) || !password)) {
+            return res.status(400).json({ message: 'Please provide username or email and password' });
         }
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne(username ? { username } : { email });
         if (!user) {
             return res.status(400).json({ message: 'User not found' });
         }
@@ -69,7 +69,8 @@ router.post('/signin', async (req, res) => {
             message: 'Signin successful',
             token,
             userId: user._id,
-            username: user.username
+            username: user.username,
+            email: user.email
         });
     } catch (err) {
         console.error(err);

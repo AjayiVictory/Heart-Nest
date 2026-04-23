@@ -9,7 +9,12 @@ const userSchema = new mongoose.Schema({
     bio:        { type: String, default: '', maxlength: 500 },
     profilePic: { type: String, default: '' },
     followers:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    following:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+    following:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    settings: {
+        emailNotif:       { type: Boolean, default: true },
+        profileVis:       { type: Boolean, default: true },
+        communityUpdates: { type: Boolean, default: true }
+    }
 }, { timestamps: true });
 
 userSchema.pre('save', async function () {

@@ -14,6 +14,34 @@ let refreshIntervalId = null;
 let socket = null;
 let refreshTimeoutId = null;
 
+// Mobile menu functions
+function toggleMobileMenu() {
+    const hamburger = document.getElementById('hamburgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    hamburger.classList.toggle('active');
+    mobileMenu.classList.toggle('active');
+}
+
+function closeMobileMenu() {
+    const hamburger = document.getElementById('hamburgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    hamburger.classList.remove('active');
+    mobileMenu.classList.remove('active');
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    document.addEventListener('click', function(event) {
+        const hamburger = document.getElementById('hamburgerBtn');
+        if (!hamburger.contains(event.target) && !mobileMenu.contains(event.target)) {
+            closeMobileMenu();
+        }
+    });
+});
+
 function isPostLikedByCurrentUser(post) {
     return (post.likes || []).some(id => String(id) === String(currentUserId));
 }
@@ -39,10 +67,26 @@ async function updateDashboardStats() {
         if (connectionCount) connectionCount.textContent = data.followingCount || 0;
 
         const nameEl = document.getElementById('userName');
-        if (nameEl) nameEl.textContent = data.username || 'User';
+        
+        // ALWAYS use the stored username, don't risk overwriting with API data
+        let displayUsername = localStorage.getItem('username') || 'Guest';
+        
+        // Only update from API if it's different and looks valid (not an email)
+        if (data.username && !data.username.includes('@')) {
+            displayUsername = data.username;
+            localStorage.setItem('username', displayUsername);
+        }
+        
+        if (nameEl) nameEl.textContent = displayUsername;
 
-        currentUser = data.username || currentUser;
-        localStorage.setItem('username', currentUser);
+        // Update bio in dashboard profile card
+        const bioEl = document.querySelector('.profile-bio');
+        if (bioEl) {
+            bioEl.textContent = data.bio || 'Tell us about yourself...';
+            console.log('✓ Dashboard bio updated:', data.bio);
+        }
+
+        currentUser = displayUsername;
         if (data.email) localStorage.setItem('userEmail', data.email);
 
         const picEl = document.getElementById('dashProfilePic');
@@ -339,14 +383,14 @@ async function searchUsers() {
         }
         searchResults.innerHTML = users.map(user => {
             const pic = user.profilePic
-                ? `<img src="${user.profilePic}" class="search-result-avatar" style="width:36px;height:36px;border-radius:50%;object-fit:cover">`
-                : `<div class="search-result-avatar">${user.username[0].toUpperCase()}</div>`;
+                ? `<img src="${user.profilePic}" class="search-result-avatar" style="width:36px;height:36px;border-radius:50%;object-fit:cover" alt="${escapeHtml(user.username)}">`
+                : `<div class="search-result-avatar">${escapeHtml(user.username[0]).toUpperCase()}</div>`;
             return `
                 <div class="search-result-item" onclick="viewUserProfile('${user._id}')">
                     ${pic}
                     <div class="search-result-info">
-                        <h4 class="search-result-name">${user.username}</h4>
-                        <p class="search-result-meta">${user.bio || ''}</p>
+                        <h4 class="search-result-name">${escapeHtml(user.username)}</h4>
+                        <p class="search-result-meta">${escapeHtml(user.bio || '')}</p>
                     </div>
                 </div>
             `;
@@ -355,6 +399,17 @@ async function searchUsers() {
     } catch (err) {
         console.error(err);
     }
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
 }
 
 function viewUserProfile(userId) {
@@ -394,6 +449,7 @@ function init() {
         tab.onclick = () => switchTab(['posts', 'liked', 'saved'][index]);
     });
 
+    // Load data in background without blocking UI
     updateDashboardStats();
     switchTab('posts');
 }
@@ -453,9 +509,12 @@ async function openEditProfile() {
         const res = await fetch(`${API}/api/users/me`, { headers: getAuthHeaders() });
         if (res.ok) {
             const data = await res.json();
-            document.getElementById('editName').value = data.username || '';
+            // Use stored username to avoid any API issues
+            const storedUsername = localStorage.getItem('username') || data.username || '';
+            document.getElementById('editName').value = storedUsername;
             document.getElementById('settingsEmail').textContent = data.email || 'Not set';
             document.getElementById('editBio').value = data.bio || '';
+            console.log('✓ Edit profile loaded - username:', storedUsername);
         }
     } catch (err) {
         console.error(err);
@@ -865,9 +924,22 @@ function setupRealtimeUpdates() {
         transports: ['websocket', 'polling']
     });
 
-    socket.on('feed:update', () => {
+    socket.on('feed:update', (data) => {
         if (!document.hidden) {
-            scheduleDashboardRefresh();
+            // For new posts created by current user, immediately add them to the feed
+            if (data && data.type === 'post_created' && data.post && data.post.author._id === currentUserId && activeTab === 'posts') {
+                const feed = document.getElementById('dashFeed');
+                if (feed && feed.textContent.includes('No posts')) {
+                    feed.innerHTML = buildPostHTML(data.post);
+                } else if (feed) {
+                    const newPostCard = buildPostHTML(data.post);
+                    feed.insertAdjacentHTML('afterbegin', newPostCard);
+                    updateDashboardStats();
+                }
+            } else {
+                // For other updates, refresh normally
+                scheduleDashboardRefresh();
+            }
         }
     });
 }
@@ -876,6 +948,17 @@ window.onload = function() {
     init();
     applyAppearanceSettings();
     updateNotificationBadge();
-    startAutoRefresh();
-    setupRealtimeUpdates();
+    
+    // Defer non-critical setup after UI is fully interactive
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+            startAutoRefresh();
+            setupRealtimeUpdates();
+        });
+    } else {
+        setTimeout(() => {
+            startAutoRefresh();
+            setupRealtimeUpdates();
+        }, 100);
+    }
 };

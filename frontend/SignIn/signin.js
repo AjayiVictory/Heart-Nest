@@ -22,7 +22,7 @@ function checkEmailValidity() {
 }
 
 function saveEmail() {
-    const rememberCheckbox = document.getElementById('remember');
+    const rememberCheckbox = document.getElementById('rememberEmail');
     const emailInput = document.getElementById('email');
 
     if (rememberCheckbox.checked) {
@@ -43,7 +43,7 @@ function loadSavedEmail() {
     const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
         document.getElementById('email').value = savedEmail;
-        document.getElementById('remember').checked = true;
+        document.getElementById('rememberEmail').checked = true;
     }
 }
 async function handleSignIn(e) {
@@ -53,8 +53,15 @@ async function handleSignIn(e) {
     const password = document.getElementById('password').value;
 
     saveEmail();
+    
+    // Validate email and password
     if (!email || !password) {
-        alert('Please fill in all fields');
+        alert('Please provide email and password');
+        return;
+    }
+
+    if (!validateEmail(email)) {
+        alert('Please enter a valid email address');
         return;
     }
 
@@ -68,15 +75,16 @@ async function handleSignIn(e) {
         const data = await res.json();
 
         if (res.ok) {
+            // Store user data including username from database
             localStorage.setItem('username', data.username);
             localStorage.setItem('token', data.token);
             localStorage.setItem('userId', data.userId);
-            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userEmail', data.email || email);
 
-            alert(`Welcome back, ${data.username}!`);
+            // Redirect to dashboard
             window.location.href = '../Dashboard/dashboard.html';
         } else {
-            alert(data.message || 'Invalid credentials');
+            alert(data.message || 'Invalid email or password');
         }
     } catch (err) {
         console.error(err);
@@ -85,6 +93,5 @@ async function handleSignIn(e) {
 }
 
 document.getElementById('signinForm').addEventListener('submit', handleSignIn);
-document.getElementById('email').addEventListener('blur', checkEmailValidity);
-document.getElementById('remember').addEventListener('change', saveEmail);
+document.getElementById('rememberEmail').addEventListener('change', saveEmail);
 window.addEventListener('load', loadSavedEmail);

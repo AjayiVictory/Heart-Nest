@@ -26,7 +26,12 @@ router.get('/me', auth, async (req, res) => {
             ...user.toObject(),
             postsCount,
             followersCount: user.followers.length,
-            followingCount: user.following.length
+            followingCount: user.following.length,
+            settings: user.settings || {
+                emailNotif: true,
+                profileVis: true,
+                communityUpdates: true
+            }
         });
     } catch (err) {
         console.error(err);
@@ -83,6 +88,28 @@ router.put('/me', auth, async (req, res) => {
             { new: true, select: '-password' }
         );
         res.json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// PUT /api/users/me/settings — update user settings
+router.put('/me/settings', auth, async (req, res) => {
+    try {
+        const { emailNotif, profileVis, communityUpdates } = req.body;
+        const updates = {};
+
+        if (emailNotif !== undefined) updates['settings.emailNotif'] = emailNotif;
+        if (profileVis !== undefined) updates['settings.profileVis'] = profileVis;
+        if (communityUpdates !== undefined) updates['settings.communityUpdates'] = communityUpdates;
+
+        const user = await User.findByIdAndUpdate(
+            req.user.userId,
+            { $set: updates },
+            { new: true, select: '-password' }
+        );
+        res.json(user.settings);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

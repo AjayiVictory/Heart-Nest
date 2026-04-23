@@ -45,6 +45,39 @@
                     <span>Logout</span>
                 </button>
             </nav>
+            <button class="hamburger-menu" id="hamburgerBtn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+        <div class="mobile-menu" id="mobileMenu">
+            <div class="mobile-menu-content">
+                <a href="dashboard.html" class="mobile-menu-item">
+                    <span>🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="../community/community.html" class="mobile-menu-item">
+                    <span>👥</span>
+                    <span>Community</span>
+                </a>
+                <a href="../profile/profile.html" class="mobile-menu-item">
+                    <span>👤</span>
+                    <span>Profile</span>
+                </a>
+                <button class="mobile-menu-item mobile-menu-btn" onclick="openSettings(event); closeMobileMenu()">
+                    <span>⚙️</span>
+                    <span>Settings</span>
+                </button>
+                <button class="mobile-menu-item mobile-menu-btn" onclick="openNotifications(event); closeMobileMenu()">
+                    <span>🔔</span>
+                    <span>Notifications</span>
+                </button>
+                <button class="mobile-menu-item mobile-menu-btn mobile-menu-logout" onclick="handleLogout()">
+                    <span>🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
         </div>
     </header>
 

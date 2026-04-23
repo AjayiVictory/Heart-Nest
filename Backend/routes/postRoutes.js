@@ -26,7 +26,8 @@ router.post('/', auth, async (req, res) => {
             .populate('author', 'username profilePic')
             .populate('comments.author', 'username profilePic');
 
-        emitFeedUpdate(req, { type: 'post_created', postId: populated._id.toString() });
+        // Emit real-time update with full post data so clients can immediately display it
+        emitFeedUpdate(req, { type: 'post_created', post: populated });
 
         res.status(201).json(populated);
     } catch (err) {

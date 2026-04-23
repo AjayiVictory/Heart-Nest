@@ -11,6 +11,14 @@ const currentUserId = localStorage.getItem('userId');
 let viewedUserId = null;
 let ownProfileView = false;
 
+// Debug info - show what's happening
+window.DEBUG_INFO = {
+    apiUrl: API,
+    userId: currentUserId,
+    timestamp: new Date().toLocaleTimeString()
+};
+console.log('🔧 Profile Debug:', window.DEBUG_INFO);
+
 async function loadProfile() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -30,17 +38,17 @@ async function loadProfile() {
     try {
         let data;
         if (isOwnProfile) {
-            const res = await fetch(`${API}/api/users/me`, { headers: getAuthHeaders() });
+            const res = await fetch(`${API}/api/users/me?t=${Date.now()}`, { headers: getAuthHeaders() });
             if (!res.ok) throw new Error('Failed to load profile');
             data = await res.json();
 
             if (editBtn) editBtn.style.display = 'inline-block';
             if (followBtn) followBtn.style.display = 'none';
 
-            document.getElementById('profileEmail').textContent = data.email || '';
+            document.getElementById('profileEmail').textContent = data.bio || '';
             if (data.email) localStorage.setItem('userEmail', data.email);
         } else {
-            const res = await fetch(`${API}/api/users/${queryUserId}`, { headers: getAuthHeaders() });
+            const res = await fetch(`${API}/api/users/${queryUserId}?t=${Date.now()}`, { headers: getAuthHeaders() });
             if (!res.ok) throw new Error('Failed to load profile');
             data = await res.json();
 
@@ -50,15 +58,44 @@ async function loadProfile() {
                 followBtn.textContent = data.isFollowing ? 'Unfollow' : 'Follow';
             }
 
-            document.getElementById('profileEmail').textContent = '';
+            document.getElementById('profileEmail').textContent = data.bio || '';
         }
 
         document.getElementById('profileName').textContent = data.username || '';
-    if (isOwnProfile && data.username) localStorage.setItem('username', data.username);
-        document.getElementById('bioInput').value = data.bio || '';
+        if (isOwnProfile && data.username) localStorage.setItem('username', data.username);
+        
+        // For own profile: keep bio ALWAYS empty. For others: show their bio
+        const bioInputEl = document.getElementById('bioInput');
+        if (bioInputEl) {
+            if (isOwnProfile) {
+                // ALWAYS force bio to empty for own profile
+                bioInputEl.value = '';
+                bioInputEl.textContent = '';
+                console.log('✓ Bio cleared to empty for own profile');
+            } else {
+                // Show other user's bio
+                bioInputEl.value = data.bio || '';
+                console.log('✓ Bio loaded for other user:', data.bio);
+            }
+        } else {
+            console.error('❌ bioInput element not found!');
+        }
 
         const picEl = document.getElementById('profilePicImg');
-        if (picEl && data.profilePic) picEl.src = data.profilePic;
+        if (picEl) {
+            if (data.profilePic) {
+                picEl.src = data.profilePic;
+                // Always update localStorage with the latest profile pic from server
+                localStorage.setItem('userProfilePic', data.profilePic);
+                localStorage.setItem('lastProfilePicUpdate', new Date().toISOString());
+            } else {
+                // Use localStorage fallback if server doesn't have one
+                const storedPic = localStorage.getItem('userProfilePic');
+                if (storedPic) {
+                    picEl.src = storedPic;
+                }
+            }
+        }
 
         const picInput = document.getElementById('profilePicInput');
         if (picInput && isOwnProfile) {
@@ -80,7 +117,14 @@ async function loadProfile() {
     }
 
     loadInterests(isOwnProfile);
-    loadSettings();
+    loadSettings(isOwnProfile);
+    
+    // Final verification
+    console.log('=== Page Load Complete ===');
+    console.log('isOwnProfile:', isOwnProfile);
+    const bioInput = document.getElementById('bioInput');
+    console.log('bioInput value:', bioInput ? bioInput.value : 'NOT FOUND');
+    console.log('bioInput placeholder:', bioInput ? bioInput.placeholder : 'NOT FOUND');
 }
 
 function loadInterests(isOwnProfile) {
@@ -98,24 +142,71 @@ function loadInterests(isOwnProfile) {
         : '<span style="opacity:0.6">No interests added yet</span>';
 }
 
-function loadSettings() {
-    const emailNotif = localStorage.getItem('emailNotif') !== 'false';
-    const profileVis = localStorage.getItem('profileVis') !== 'false';
-    const communityUpdates = localStorage.getItem('communityUpdates') !== 'false';
+function loadSettings(isOwnProfile) {
+    // Only show settings for own profile
+    if (!isOwnProfile) {
+        console.log('Settings hidden (viewing other profile)');
+        return;
+    }
+    
+    try {
+        // Load from localStorage as default
+        const emailNotif = localStorage.getItem('emailNotif') !== 'false';
+        const profileVis = localStorage.getItem('profileVis') !== 'false';
+        const communityUpdates = localStorage.getItem('communityUpdates') !== 'false';
 
-    document.getElementById('emailNotif').checked = emailNotif;
-    document.getElementById('profileVis').checked = profileVis;
-    document.getElementById('matchAlerts').checked = communityUpdates;
+        const emailNotifCbx = document.getElementById('emailNotif');
+        const profileVisCbx = document.getElementById('profileVis');
+        const matchAlertsCbx = document.getElementById('matchAlerts');
 
-    document.getElementById('emailNotif').onchange = () => saveSettings();
-    document.getElementById('profileVis').onchange = () => saveSettings();
-    document.getElementById('matchAlerts').onchange = () => saveSettings();
+        if (!emailNotifCbx || !profileVisCbx || !matchAlertsCbx) {
+            console.warn('Settings checkboxes not found in HTML');
+            return;
+        }
+
+        emailNotifCbx.checked = emailNotif;
+        profileVisCbx.checked = profileVis;
+        matchAlertsCbx.checked = communityUpdates;
+
+        console.log('✓ Settings loaded:', { emailNotif, profileVis, communityUpdates });
+
+        // Setup change handlers
+        emailNotifCbx.onchange = () => saveSettings();
+        profileVisCbx.onchange = () => saveSettings();
+        matchAlertsCbx.onchange = () => saveSettings();
+
+        console.log('✓ Settings change handlers attached');
+    } catch (err) {
+        console.error('Error loading settings:', err);
+    }
 }
 
 function saveSettings() {
-    localStorage.setItem('emailNotif', document.getElementById('emailNotif').checked);
-    localStorage.setItem('profileVis', document.getElementById('profileVis').checked);
-    localStorage.setItem('communityUpdates', document.getElementById('matchAlerts').checked);
+    try {
+        const settings = {
+            emailNotif: document.getElementById('emailNotif').checked,
+            profileVis: document.getElementById('profileVis').checked,
+            communityUpdates: document.getElementById('matchAlerts').checked
+        };
+        
+        localStorage.setItem('emailNotif', settings.emailNotif);
+        localStorage.setItem('profileVis', settings.profileVis);
+        localStorage.setItem('communityUpdates', settings.communityUpdates);
+
+        console.log('✓ Settings saved to localStorage:', settings);
+
+        // Also persist to backend
+        fetch(`${API}/api/users/me/settings`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(settings)
+        })
+        .then(res => res.json())
+        .then(data => console.log('✓ Settings synced to backend:', data))
+        .catch(err => console.warn('Settings sync to backend failed (using localStorage):', err));
+    } catch (err) {
+        console.error('Error saving settings:', err);
+    }
 }
 
 async function uploadAvatarImmediate(input, previewId) {
@@ -145,9 +236,12 @@ async function uploadAvatarImmediate(input, previewId) {
             document.querySelectorAll('[id="dashProfilePic"], [id="profilePicImg"]').forEach(el => {
                 if (el) el.src = profilePic;
             });
-            // Store in localStorage for persistence
+            // Store in localStorage for persistence across reloads
             localStorage.setItem('userProfilePic', profilePic);
-            alert('✓ Profile picture updated successfully!');
+            // Update lastUpdateTime to track profile changes
+            localStorage.setItem('lastProfilePicUpdate', new Date().toISOString());
+            // Success - no alert needed, user can see the image updated
+            console.log('✓ Profile picture updated successfully!');
         } else {
             const error = await res.json();
             alert('Upload failed: ' + (error.message || 'Please try again.'));
@@ -155,6 +249,9 @@ async function uploadAvatarImmediate(input, previewId) {
     } catch (err) {
         console.error(err);
         alert('Upload failed: Network error. Please check your connection.');
+    } finally {
+        // Reset input so same file can be selected again
+        input.value = '';
     }
 }
 
@@ -167,6 +264,7 @@ async function toggleEdit() {
 
     if (bioInput.readOnly) {
         bioInput.readOnly = false;
+        bioInput.style.cursor = 'text';
         if (nameEl) {
             nameEl.contentEditable = 'true';
             nameEl.focus();
@@ -174,7 +272,9 @@ async function toggleEdit() {
         bioInput.focus();
         if (btn) {
             btn.textContent = 'Save Profile';
-            btn.style.background = 'rgba(100, 200, 100, 0.3)';
+            btn.style.background = 'var(--primary-color)';
+            btn.style.border = '1px solid var(--primary-color)';
+            btn.style.color = 'var(--surface)';
         }
     } else {
         const username = (nameEl ? nameEl.textContent : '').trim();
@@ -209,10 +309,13 @@ async function toggleEdit() {
         }
 
         bioInput.readOnly = true;
+        bioInput.style.cursor = 'default';
         if (nameEl) nameEl.contentEditable = 'false';
         if (btn) {
             btn.textContent = 'Edit Profile';
-            btn.style.background = 'rgba(255, 255, 255, 0.25)';
+            btn.style.background = 'var(--primary-color)';
+            btn.style.border = '1px solid var(--primary-color)';
+            btn.style.color = 'var(--surface)';
         }
     }
 }

@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: heart-nest-backend
+    runtime: node
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: "cd Backend && npm install"
+    startCommand: "cd Backend && npm start"
+    envVars:
+      - key: PORT
+        value: 5500
+      - key: MONGO_URI
+        fromDatabase:
+          name: heart-nest-db
+          property: connectionString
+      - key: JWT_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+databases:
+  - name: heart-nest-db
+    plan: free

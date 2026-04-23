@@ -4,22 +4,54 @@
     box-sizing: border-box;
 }
 
+
+:root {
+    --primary-color: #A78BFA;
+    --primary-dark: #8B5CF6;
+    --text-primary: #4C1D95;
+    --text-secondary: #6B5B95;
+    --text-light: #9CA3AF;
+    --background: #FAF5FF;
+    --surface: #FFFFFF;
+    --accent-green: #86EFAC;
+    --accent-pink: #F9A8D4;
+    --border-color: #E9D5FF;
+    --shadow-sm: 0 2px 8px rgba(167, 139, 250, 0.1);
+    --shadow-md: 0 8px 24px rgba(167, 139, 250, 0.15);
+    --shadow-lg: 0 16px 40px rgba(167, 139, 250, 0.2);
+}
+
+:root {
+    --primary-color: #A78BFA;
+    --primary-dark: #8B5CF6;
+    --text-primary: #4C1D95;
+    --text-secondary: #6B5B95;
+    --text-light: #9CA3AF;
+    --background: #FAF5FF;
+    --surface: #FFFFFF;
+    --accent-green: #86EFAC;
+    --accent-pink: #F9A8D4;
+    --border-color: #E9D5FF;
+    --shadow-sm: 0 2px 8px rgba(167, 139, 250, 0.1);
+    --shadow-md: 0 8px 24px rgba(167, 139, 250, 0.15);
+    --shadow-lg: 0 16px 40px rgba(167, 139, 250, 0.2);
+}
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: #F7F9FC;
+    background: var(--background);
     min-height: 100vh;
-    color: #1A1A1A;
+    color: var(--text-primary);
     line-height: 1.6;
 }
 
 .header {
     padding: 15px 0;
-    background: #FFFFFF;
-    border-bottom: 1px solid #E5E7EB;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .header-content {
@@ -39,7 +71,7 @@ body {
     gap: 10px;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #0066CC;
+    color: var(--primary-color);
 }
 
 .logo-icon {
@@ -60,7 +92,7 @@ body {
     padding: 8px 12px;
     border-radius: 8px;
     text-decoration: none;
-    color: #6B7280;
+    color: var(--text-secondary);
     transition: all 0.3s ease;
     background: transparent;
     border: 1px solid transparent;
@@ -69,14 +101,14 @@ body {
 }
 
 .nav-item:hover {
-    background: #F7F9FC;
-    color: #0066CC;
+    background: var(--background);
+    color: var(--primary-color);
 }
 
 .nav-item.active {
-    background: #E6F0FF;
-    color: #0066CC;
-    border: 1px solid #CCE0FF;
+    background: rgba(167, 139, 250, 0.2);
+    color: var(--primary-color);
+    border: 1px solid rgba(167, 139, 250, 0.3);
 }
 
 .nav-icon {
@@ -85,8 +117,8 @@ body {
 
 .btn-notification {
     position: relative;
-    background: #F7F9FC;
-    border: 1px solid #E5E7EB;
+    background: var(--background);
+    border: 1px solid rgba(167, 139, 250, 0.2);
     border-radius: 8px;
     width: 40px;
     height: 40px;
@@ -228,22 +260,27 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #ffffff;
+    background: rgba(167, 139, 250, 0.25);
+    border: 1px solid rgba(167, 139, 250, 0.4);
+    color: var(--text-primary);
     padding: 8px 15px;
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .post-action-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(167, 139, 250, 0.35);
+    border-color: rgba(167, 139, 250, 0.6);
+    transform: translateY(-2px);
 }
 
 .post-action-btn.liked {
-    background: rgba(255, 100, 100, 0.3);
+    background: rgba(249, 168, 212, 0.3);
+    border-color: rgba(249, 168, 212, 0.5);
+    color: #DC2626;
 }
 
 /* Comments Section */
@@ -265,7 +302,7 @@ body {
     gap: 10px;
     align-items: flex-start;
     padding: 10px;
-    background: #F7F9FC;
+    background: var(--background);
     border-radius: 10px;
     position: relative;
 }
@@ -297,12 +334,12 @@ body {
     font-size: 0.9rem;
     display: block;
     margin-bottom: 4px;
-    color: #1A1A1A;
+    color: var(--text-primary);
 }
 
 .comment-content p {
     font-size: 0.9rem;
-    color: #6B7280;
+    color: var(--text-secondary);
     margin: 0;
 }
 
@@ -336,10 +373,10 @@ body {
 .comment-input input {
     flex: 1;
     padding: 10px 15px;
-    background: #FFFFFF;
-    border: 1px solid #E5E7EB;
+    background: var(--surface);
+    border: 1px solid rgba(167, 139, 250, 0.2);
     border-radius: 25px;
-    color: #1A1A1A;
+    color: var(--text-primary);
     font-size: 0.9rem;
 }
 
@@ -349,8 +386,8 @@ body {
 
 .comment-input input:focus {
     outline: none;
-    background: #FFFFFF;
-    border-color: #0066CC;
+    background: var(--surface);
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 3px #E6F0FF;
 }
 

@@ -247,9 +247,21 @@ function setupCommunityRealtimeUpdates() {
         transports: ['websocket', 'polling']
     });
 
-    communitySocket.on('feed:update', () => {
+    communitySocket.on('feed:update', (data) => {
         if (!document.hidden) {
-            scheduleCommunityRefresh();
+            // Handle new posts immediately
+            if (data && data.type === 'post_created' && data.post) {
+                const feed = document.getElementById('communityFeed');
+                if (feed && feed.textContent.includes('No posts')) {
+                    feed.innerHTML = buildPostCard(data.post);
+                } else if (feed) {
+                    const newPostCard = buildPostCard(data.post);
+                    feed.insertAdjacentHTML('afterbegin', newPostCard);
+                }
+            } else {
+                // For other updates (likes, comments, etc), refresh the feed
+                scheduleCommunityRefresh();
+            }
         }
     });
 }
