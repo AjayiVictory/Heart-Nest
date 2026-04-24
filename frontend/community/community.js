@@ -111,16 +111,16 @@ function buildPostCard(post) {
             const isReplyLiked = (r.likes || []).some(id => String(id) === String(currentUserId));
             const replyLikeCount = (r.likes || []).length;
             
-            return `<div class="comment-item reply-item" id="comm-reply-${r._id}" style="margin-left:40px;margin-top:8px;">
+            return `<div class="comment-item reply-item" id="comm-reply-${r._id}">
                 ${replyAvatar}
                 <div class="comment-content">
                     <strong>${escapeHtml(r.author.username)}</strong>
                     <p>${escapeHtml(r.content)}</p>
-                    <div style="font-size:0.85rem;margin-top:4px;gap:8px;display:flex;">
-                        <button class="comment-action-btn" onclick="toggleCommReplyLike('${post._id}','${c._id}','${r._id}')" style="background:none;border:none;cursor:pointer;color:${isReplyLiked ? '#DC2626' : '#999'};">
+                    <div style="font-size:0.85rem;margin-top:8px;gap:8px;display:flex;flex-wrap:wrap;">
+                        <button class="comment-action-btn" onclick="toggleCommReplyLike('${post._id}','${c._id}','${r._id}')" style="color:${isReplyLiked ? '#DC2626' : '#0066CC'};">
                             ❤️ ${replyLikeCount > 0 ? replyLikeCount : ''}
                         </button>
-                        ${isOwnReply ? `<button class="comment-action-btn" onclick="deleteCommReply('${post._id}','${c._id}','${r._id}')" style="background:none;border:none;cursor:pointer;color:#999;">✕</button>` : ''}
+                        ${isOwnReply ? `<button class="comment-action-btn" onclick="deleteCommReply('${post._id}','${c._id}','${r._id}')" style="color:#999;">✕ Delete</button>` : ''}
                     </div>
                 </div>
             </div>`;
@@ -131,20 +131,18 @@ function buildPostCard(post) {
             <div class="comment-content">
                 <strong>${escapeHtml(c.author.username)}</strong>
                 <p>${escapeHtml(c.content)}</p>
-                <div style="font-size:0.85rem;margin-top:4px;gap:8px;display:flex;">
-                    <button class="comment-action-btn" onclick="toggleCommCommentLike('${post._id}','${c._id}')" style="background:none;border:none;cursor:pointer;color:${isCommentLiked ? '#DC2626' : '#999'};">
+                <div style="font-size:0.85rem;margin-top:8px;gap:8px;display:flex;flex-wrap:wrap;">
+                    <button class="comment-action-btn" onclick="toggleCommCommentLike('${post._id}','${c._id}')" style="color:${isCommentLiked ? '#DC2626' : '#0066CC'};">
                         ❤️ ${commentLikeCount > 0 ? commentLikeCount : ''}
                     </button>
-                    <button class="comment-action-btn" onclick="toggleCommReplyForm('${post._id}','${c._id}')" style="background:none;border:none;cursor:pointer;color:#7C3AED;font-weight:500;">
-                        Reply
+                    <button class="comment-action-btn" onclick="toggleCommReplyForm('${post._id}','${c._id}')" style="color:#0066CC;">
+                        💬 Reply
                     </button>
-                    ${isOwnComment ? `<button class="comment-action-btn" onclick="deleteComment('${post._id}','${c._id}')" style="background:none;border:none;cursor:pointer;color:#999;">✕</button>` : ''}
+                    ${isOwnComment ? `<button class="comment-action-btn" onclick="deleteComment('${post._id}','${c._id}')" style="color:#999;">✕ Delete</button>` : ''}
                 </div>
-                <div id="comm-reply-form-${c._id}" style="display:none;margin-top:8px;">
-                    <div style="display:flex;gap:8px;">
-                        <input type="text" id="comm-replyInput-${c._id}" placeholder="Write a reply..." style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:0.9rem;">
-                        <button onclick="addCommReply('${post._id}','${c._id}')" style="padding:6px 12px;background:#7C3AED;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;">Send</button>
-                    </div>
+                <div id="comm-reply-form-${c._id}" class="reply-form" style="display:none;">
+                    <input type="text" id="comm-replyInput-${c._id}" placeholder="Write a reply..." autocomplete="off">
+                    <button onclick="addCommReply('${post._id}','${c._id}')">Send</button>
                 </div>
             </div>
             ${repliesHtml ? `<div style="margin-top:8px;">${repliesHtml}</div>` : ''}
