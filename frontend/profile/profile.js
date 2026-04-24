@@ -19,6 +19,19 @@ window.DEBUG_INFO = {
 };
 console.log('🔧 Profile Debug:', window.DEBUG_INFO);
 
+// Listen for profile picture updates from other tabs/pages via BroadcastChannel
+if (window.BroadcastChannel) {
+    const channel = new BroadcastChannel('profile-pic-update');
+    channel.onmessage = (event) => {
+        if (event.data.profilePic) {
+            localStorage.setItem('userProfilePic', event.data.profilePic);
+            const picEl = document.getElementById('profilePicImg');
+            if (picEl) picEl.src = event.data.profilePic;
+            console.log('✓ Profile picture synced from other page');
+        }
+    };
+}
+
 async function loadProfile() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -241,9 +254,14 @@ async function uploadAvatarImmediate(input, previewId) {
             document.querySelectorAll('[id="dashProfilePic"], [id="profilePicImg"]').forEach(el => {
                 if (el) el.src = profilePic;
             });
-            // Store in localStorage for persistence across reloads
+            // Store in localStorage for persistence across reloads and all pages
             localStorage.setItem('userProfilePic', profilePic);
             localStorage.setItem('lastProfilePicUpdate', new Date().toISOString());
+            // Broadcast update to all open tabs/windows
+            if (window.BroadcastChannel) {
+                const channel = new BroadcastChannel('profile-pic-update');
+                channel.postMessage({ profilePic: profilePic });
+            }
             // Show success message without alert
             console.log('✓ Profile picture updated successfully!');
         } else {

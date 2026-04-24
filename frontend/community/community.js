@@ -12,6 +12,21 @@ let communityRefreshIntervalId = null;
 let communitySocket = null;
 let communityRefreshTimeoutId = null;
 
+// Listen for profile picture updates from other tabs/pages via BroadcastChannel
+if (window.BroadcastChannel) {
+    const channel = new BroadcastChannel('profile-pic-update');
+    channel.onmessage = (event) => {
+        if (event.data.profilePic) {
+            localStorage.setItem('userProfilePic', event.data.profilePic);
+            // Update all profile pictures on page
+            document.querySelectorAll('[id="dashProfilePic"], [id="profilePicImg"]').forEach(el => {
+                if (el) el.src = event.data.profilePic;
+            });
+            console.log('✓ Profile picture synced from other page');
+        }
+    };
+}
+
 function isPostLikedByCurrentUser(post) {
     return (post.likes || []).some(id => String(id) === String(currentUserId));
 }
@@ -337,6 +352,7 @@ async function addCommReply(postId, commentId) {
     }
 
     try {
+        console.log(`Sending community reply - postId: ${postId}, commentId: ${commentId}, content: ${content}`);
         const res = await fetch(`${API}/api/posts/${postId}/comments/${commentId}/replies`, {
             method: 'POST',
             headers: getAuthHeaders(),
@@ -344,6 +360,7 @@ async function addCommReply(postId, commentId) {
         });
         if (res.ok) {
             const reply = await res.json();
+            console.log('✓ Community reply added successfully:', reply);
             const formEl = document.getElementById(`comm-reply-form-${commentId}`);
             if (formEl) formEl.style.display = 'none';
             if (input) input.value = '';
@@ -352,7 +369,7 @@ async function addCommReply(postId, commentId) {
             loadCommunityFeed();
         } else {
             const errData = await res.json().catch(() => ({}));
-            console.error('Reply error:', res.status, errData);
+            console.error('Reply API error:', res.status, errData);
             alert(`Failed to add reply: ${errData.message || res.statusText}`);
         }
     } catch (err) {

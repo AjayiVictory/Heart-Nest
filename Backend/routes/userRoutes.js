@@ -208,7 +208,7 @@ router.put('/:userId/follow', auth, async (req, res) => {
         if (!isFollowing) {
             const io = req.app.get('io');
             if (io) {
-                io.emit('notification', {
+                io.emit('feed:update', {
                     type: 'user_followed',
                     followedUserId: req.params.userId,
                     followerUsername: me.username,

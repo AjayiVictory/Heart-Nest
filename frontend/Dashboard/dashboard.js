@@ -427,6 +427,7 @@ async function addReply(postId, commentId) {
         return;
     }
     try {
+        console.log(`Sending reply - postId: ${postId}, commentId: ${commentId}, content: ${content}`);
         const res = await fetch(`${API}/api/posts/${postId}/comments/${commentId}/replies`, {
             method: 'POST',
             headers: getAuthHeaders(),
@@ -434,10 +435,12 @@ async function addReply(postId, commentId) {
         });
         if (!res.ok) {
             const err = await res.json();
+            console.error('Reply API error:', err);
             alert('Failed to add reply: ' + (err.message || 'Try again'));
             return;
         }
         const reply = await res.json();
+        console.log('✓ Reply added successfully:', reply);
         
         // Create reply HTML and add it to the page
         const replyAvatar = reply.author.profilePic
@@ -642,6 +645,19 @@ function init() {
     if (storedProfilePic) {
         const picEl = document.getElementById('dashProfilePic');
         if (picEl) picEl.src = storedProfilePic;
+    }
+
+    // Listen for profile picture updates from other tabs/pages via BroadcastChannel
+    if (window.BroadcastChannel) {
+        const channel = new BroadcastChannel('profile-pic-update');
+        channel.onmessage = (event) => {
+            if (event.data.profilePic) {
+                localStorage.setItem('userProfilePic', event.data.profilePic);
+                const picEl = document.getElementById('dashProfilePic');
+                if (picEl) picEl.src = event.data.profilePic;
+                console.log('✓ Profile picture synced from other page');
+            }
+        };
     }
 
     const tabs = document.querySelectorAll('.tab-btn');
