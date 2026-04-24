@@ -442,6 +442,14 @@ async function addReply(postId, commentId) {
         const reply = await res.json();
         console.log('✓ Reply added successfully:', reply);
         
+        // Verify reply has author populated
+        if (!reply.author || !reply.author.username) {
+            console.error('Reply author not populated:', reply);
+            alert('Reply added but author info missing. Refreshing...');
+            await loadPostsFromAPI(activeTab);
+            return;
+        }
+        
         // Create reply HTML and add it to the page
         const replyAvatar = reply.author.profilePic
             ? `<img src="${reply.author.profilePic}" alt="${reply.author.username}" class="comment-avatar" style="width:28px;height:28px;">`
@@ -464,19 +472,30 @@ async function addReply(postId, commentId) {
         // Find where to insert the reply (after existing replies or before reply form)
         const commentElement = document.getElementById(`comment-${commentId}`);
         if (commentElement) {
-            const replyForm = commentElement.querySelector(`#reply-form-${commentId}`);
-            if (replyForm) {
-                replyForm.insertAdjacentHTML('beforebegin', replyHtml);
+            const repliesContainer = commentElement.querySelector('div[style*="margin-top:8px"]');
+            if (repliesContainer) {
+                // Add to existing replies container
+                repliesContainer.insertAdjacentHTML('beforeend', replyHtml);
             } else {
-                commentElement.insertAdjacentHTML('beforeend', replyHtml);
+                // Create new replies container and add reply
+                const newContainer = document.createElement('div');
+                newContainer.style.marginTop = '8px';
+                newContainer.innerHTML = replyHtml;
+                const replyForm = commentElement.querySelector(`#reply-form-${commentId}`);
+                if (replyForm) {
+                    replyForm.parentElement.insertBefore(newContainer, replyForm);
+                } else {
+                    commentElement.appendChild(newContainer);
+                }
             }
         }
         
         input.value = '';
         toggleReplyForm(postId, commentId);
+        console.log('✓ Reply rendered on page');
     } catch (err) {
         console.error('Add reply error:', err);
-        alert('Error adding reply.');
+        alert('Error adding reply: ' + err.message);
     }
 }
 
@@ -664,6 +683,15 @@ function init() {
     tabs.forEach((tab, index) => {
         tab.onclick = () => switchTab(['posts', 'liked', 'saved'][index]);
     });
+
+    // Check if this is a new user and show welcome message
+    const isNewUser = localStorage.getItem('isNewUser');
+    if (isNewUser === 'true') {
+        localStorage.removeItem('isNewUser');
+        setTimeout(() => {
+            alert(`👋 Welcome to Heart-Nest, ${currentUser}!\n\nYou can now:\n📝 Create posts to share your thoughts\n❤️ Like and comment on posts\n👥 Follow other users\n💬 Have nested conversations with replies\n\nHappy connecting!`);
+        }, 500);
+    }
 
     // Load data in background without blocking UI
     updateDashboardStats();

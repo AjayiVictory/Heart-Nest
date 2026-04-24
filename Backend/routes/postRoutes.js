@@ -218,13 +218,16 @@ router.post('/:id/comments/:commentId/replies', auth, async (req, res) => {
         });
         await post.save();
 
+        // Fetch updated post with full population including nested replies
         const updated = await Post.findById(req.params.id)
+            .populate('author', 'username profilePic')
             .populate('comments.author', 'username profilePic')
             .populate('comments.replies.author', 'username profilePic');
 
         const updatedComment = updated.comments.id(req.params.commentId);
         const newReply = updatedComment.replies[updatedComment.replies.length - 1];
 
+        console.log('✓ Reply saved successfully:', newReply);
         res.status(201).json(newReply);
     } catch (err) {
         console.error('Error adding reply:', err);

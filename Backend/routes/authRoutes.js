@@ -35,7 +35,13 @@ router.post('/signup', async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
-        res.status(201).json({ message: 'Signup successful', token, userId: newUser._id, username: newUser.username });
+        res.status(201).json({ 
+            message: 'Signup successful', 
+            token, 
+            userId: newUser._id, 
+            username: newUser.username,
+            isNewUser: true 
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

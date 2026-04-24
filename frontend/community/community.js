@@ -361,6 +361,15 @@ async function addCommReply(postId, commentId) {
         if (res.ok) {
             const reply = await res.json();
             console.log('✓ Community reply added successfully:', reply);
+            
+            // Verify reply has author populated
+            if (!reply.author || !reply.author.username) {
+                console.error('Reply author not populated:', reply);
+                alert('Reply added but author info missing. Refreshing...');
+                loadCommunityFeed();
+                return;
+            }
+            
             const formEl = document.getElementById(`comm-reply-form-${commentId}`);
             if (formEl) formEl.style.display = 'none';
             if (input) input.value = '';
