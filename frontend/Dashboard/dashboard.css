@@ -778,41 +778,49 @@ body {
 .comment-input {
     display: flex;
     gap: 10px;
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(124, 58, 237, 0.08);
+    border-radius: 8px;
 }
 
 .comment-input input {
     flex: 1;
     padding: 10px 15px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: #ffffff;
+    border: 1px solid rgba(124, 58, 237, 0.3);
     border-radius: 25px;
-    color: #ffffff;
+    color: #1f2937;
     font-size: 0.9rem;
 }
 
 .comment-input input::placeholder {
-    color: rgba(255, 255, 255, 0.6);
+    color: #9CA3AF;
 }
 
 .comment-input input:focus {
     outline: none;
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: #ffffff;
+    border-color: #7C3AED;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
 .comment-input button {
     padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    border: none;
     color: #ffffff;
     border-radius: 25px;
     cursor: pointer;
     font-weight: 600;
     transition: all 0.3s ease;
+    white-space: nowrap;
 }
 
 .comment-input button:hover {
-    background: rgba(255, 255, 255, 0.35);
+    background: linear-gradient(135deg, #8D5FED, #7D39E0);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
 }
 
 /* Comment Action Buttons (Like, Reply, Delete) */
